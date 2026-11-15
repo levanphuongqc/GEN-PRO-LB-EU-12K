@@ -104,7 +104,7 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 
 /* bottom nav */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none;z-index:20}
-nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px;padding:6px;border-radius:24px;background:var(--surface);box-shadow:0 8px 30px rgba(10,30,26,.22);border:1px solid var(--line)}
+nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:460px;padding:6px;border-radius:24px;background:var(--surface);box-shadow:0 8px 30px rgba(10,30,26,.22);border:1px solid var(--line)}
 .tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border:0;border-radius:18px;background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:background .2s,color .2s}
 .tab-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tab-btn.active{background:var(--accent);color:var(--on-accent)}
@@ -112,17 +112,55 @@ nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px
 /* toast */
 #toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:30;max-width:90%;text-align:center}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+/* khoá khi chưa đăng nhập */
+body.locked .app,body.locked nav{display:none}
+body:not(.locked) #login{display:none}
+#login{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;background:var(--hero);color:var(--hero-ink);padding:calc(env(safe-area-inset-top,0px) + 20px) 20px calc(env(safe-area-inset-bottom,0px) + 20px);overflow-y:auto}
+.login-card{width:100%;max-width:380px}
+.login-card .logo{width:60px;height:60px;border-radius:20px;background:var(--pv);color:#1b1300;display:flex;align-items:center;justify-content:center;margin-bottom:18px}
+.login-card .logo svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.login-card h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em}
+.login-card p.sub{margin:4px 0 22px;color:var(--hero-muted);font-size:14px}
+.lf{display:block;margin-bottom:14px}
+.lf span{display:block;font-size:13px;font-weight:600;color:var(--hero-muted);margin-bottom:6px}
+.txt{display:flex;align-items:center;background:var(--surface2);color:var(--ink);border:2px solid transparent;border-radius:14px;padding:0 14px;transition:border-color .2s}
+.txt:focus-within{border-color:var(--grid)}
+.txt input{width:100%;min-width:0;border:0;background:none;padding:13px 0;font-size:16px;outline:none}
+.txt button{flex:none;border:0;background:none;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;padding:8px 0 8px 10px}
+.remember{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--hero-muted);margin:2px 0 18px}
+.remember input{width:18px;height:18px;accent-color:var(--pv)}
+.login-card .btn-save{background:var(--pv);color:#1b1300}
+.err{min-height:20px;margin:0 0 10px;color:#ff8d76;font-size:13.5px;font-weight:600}
+.hint-box{background:var(--surface2);border-left:4px solid var(--pv);border-radius:12px;padding:10px 14px;font-size:13px;color:var(--ink);margin:12px 0 4px}
+.group .txt{margin-bottom:12px}
+.group .lab{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:10px 0 6px}
+.btn-out{width:100%;padding:14px;border:2px solid var(--line);border-radius:18px;background:none;color:var(--load);font-weight:700;font-size:15px;cursor:pointer;margin-top:12px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
-<body>
+<body class="locked">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
   <symbol id="i-bat" viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="17" height="9" rx="2.5"/><path d="M22 11v2M6.5 10.5v3M10 10.5v3"/></symbol>
   <symbol id="i-grid" viewBox="0 0 24 24"><path d="M12 2.5L7 21.5M12 2.5l5 19M8.5 8h7M7.5 14h9M9 8l6.5 6M15 8L8.5 14"/></symbol>
   <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5l9-8 9 8M5.5 10v10.5h13V10"/></symbol>
   <symbol id="i-inv" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7 12h2.2l1.5-3.5 2.6 7 1.5-3.5H17"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20.5c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></symbol>
 </svg>
+
+<!-- ĐĂNG NHẬP -->
+<div id="login" role="dialog" aria-modal="true" aria-labelledby="login-h">
+  <form class="login-card" id="login-form" autocomplete="on" onsubmit="return doLogin(event)">
+    <div class="logo"><svg viewBox="0 0 24 24"><use href="#i-sun"/></svg></div>
+    <h2 id="login-h">Đăng nhập</h2>
+    <p class="sub">LuxPower GEN PRO-LB-EU 12K</p>
+    <label class="lf"><span>Tên người dùng</span><div class="txt"><input id="lg_user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div></label>
+    <label class="lf"><span>Mật khẩu</span><div class="txt"><input id="lg_pass" name="password" type="password" autocomplete="current-password" required><button type="button" onclick="togglePw('lg_pass',this)">Hiện</button></div></label>
+    <label class="remember"><input type="checkbox" id="lg_remember" checked> Ghi nhớ đăng nhập trên thiết bị này</label>
+    <p class="err" id="lg_err" role="alert"></p>
+    <button type="submit" class="btn-save" id="lg_btn">Đăng nhập</button>
+  </form>
+</div>
 
 <div class="app">
   <header>
@@ -224,20 +262,44 @@ nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px
 
     <div class="group">
       <h3 style="--c:var(--load)">Bình nóng 1</h3>
-      <div class="field"><label for="b1_on">Bật khi điện dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
-      <div class="field"><label for="b1_off">Tắt khi điện dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
+      <div class="field"><label for="b1_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
+      <div class="field"><label for="b1_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
       <div class="field"><label for="b1_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b1_soc"><em>%</em></div></div>
     </div>
 
     <div class="group">
       <h3 style="--c:var(--grid)">Bình nóng 2</h3>
-      <div class="field"><label for="b2_on">Bật khi điện dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_on"><em>W</em></div></div>
-      <div class="field"><label for="b2_off">Tắt khi điện dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_off"><em>W</em></div></div>
+      <div class="field"><label for="b2_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_on"><em>W</em></div></div>
+      <div class="field"><label for="b2_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_off"><em>W</em></div></div>
       <div class="field"><label for="b2_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
     </div>
 
     <button type="button" class="btn-save" id="btn-save" onclick="saveConfig()">Lưu cài đặt Auto</button>
     <p class="sync">ESP32 sẽ cập nhật sau tối đa 30 giây</p>
+  </section>
+
+  <!-- TÀI KHOẢN -->
+  <section id="tab3" class="panel">
+    <div class="group">
+      <h3 style="--c:var(--grid)">Tài khoản</h3>
+      <p class="hint">Đang đăng nhập: <b id="acc_cur">--</b></p>
+      <div class="hint-box" id="acc_default" hidden>Bạn đang dùng tài khoản mặc định (admin / admin). Hãy đổi tên và mật khẩu ngay.</div>
+    </div>
+    <form class="group" id="acc-form" onsubmit="return changeAccount(event)" autocomplete="off">
+      <h3 style="--c:var(--pv)">Đổi tên và mật khẩu</h3>
+      <p class="hint">Để trống mục nào bạn không muốn đổi.</p>
+      <label class="lab" for="ac_user">Tên người dùng mới</label>
+      <div class="txt"><input id="ac_user" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <label class="lab" for="ac_new">Mật khẩu mới (tối thiểu 6 ký tự)</label>
+      <div class="txt"><input id="ac_new" type="password" autocomplete="new-password"><button type="button" onclick="togglePw('ac_new',this)">Hiện</button></div>
+      <label class="lab" for="ac_new2">Nhập lại mật khẩu mới</label>
+      <div class="txt"><input id="ac_new2" type="password" autocomplete="new-password"></div>
+      <label class="lab" for="ac_cur">Mật khẩu hiện tại (bắt buộc để xác nhận)</label>
+      <div class="txt"><input id="ac_cur" type="password" autocomplete="current-password" required><button type="button" onclick="togglePw('ac_cur',this)">Hiện</button></div>
+      <p class="err" id="ac_err" role="alert" style="color:var(--load)"></p>
+      <button type="submit" class="btn-save" id="ac_btn" style="margin-bottom:14px">Lưu thay đổi</button>
+    </form>
+    <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
   </section>
 </div>
 
@@ -246,13 +308,14 @@ nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px
     <button type="button" id="btn0" class="tab-btn active" onclick="openTab(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Sơ đồ</button>
     <button type="button" id="btn1" class="tab-btn" onclick="openTab(1)"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Điều khiển</button>
     <button type="button" id="btn2" class="tab-btn" onclick="openTab(2)"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Auto</button>
+    <button type="button" id="btn3" class="tab-btn" onclick="openTab(3)"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg>Tài khoản</button>
   </div>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
   function openTab(t) {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 4; i++) {
       document.getElementById('tab' + i).classList.toggle('active', i === t);
       document.getElementById('btn' + i).classList.toggle('active', i === t);
     }
@@ -296,66 +359,71 @@ nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px
   }
   setInterval(refreshChip, 10000);
 
-  // Dữ liệu Inverter
-  database.ref('/Inverter').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (!data) return;
-    const pv = data.PV || 0, load = data.Load || 0, soc = data.Battery || 0;
-    const charge = data.BatCharge || 0, discharge = data.BatDischarge || 0;
-    const gridIn = data.GridImport || 0, gridOut = data.GridExport || 0;
-    const grid = gridIn - gridOut;
-    const avail = pv - load;
-    const $ = (id) => document.getElementById(id);
+  let started = false;
+  function startApp() {
+    if (started) return;
+    started = true;
+    // Dữ liệu Inverter
+    database.ref('/Inverter').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+      const pv = data.PV || 0, load = data.Load || 0, soc = data.Battery || 0;
+      const charge = data.BatCharge || 0, discharge = data.BatDischarge || 0;
+      const gridIn = data.GridImport || 0, gridOut = data.GridExport || 0;
+      const grid = gridIn - gridOut;
+      const avail = pv - load;
+      const $ = (id) => document.getElementById(id);
 
-    $('val-pv').textContent = pv + ' W';
-    $('hero-pv').innerHTML = pv + '<span>W</span>';
-    $('val-load').textContent = load + ' W';
-    $('val-bat').textContent = soc + ' %';
-    $('val-bat-w').textContent = (charge > 0 ? '+' + charge : (discharge > 0 ? '-' + discharge : '0')) + ' W';
-    $('val-grid').textContent = Math.abs(grid) + ' W';
-    $('st-grid').textContent = grid > 0 ? 'Đang mua' : (grid < 0 ? 'Đang bán' : 'Nghỉ');
-    $('val-avail').innerHTML = (avail > 0 ? '+' : '') + avail + '<span>W</span>';
-    $('sum-bat').innerHTML = soc + '<span>%</span>';
-    $('bar-bat').style.width = Math.max(0, Math.min(100, soc)) + '%';
+      $('val-pv').textContent = pv + ' W';
+      $('hero-pv').innerHTML = pv + '<span>W</span>';
+      $('val-load').textContent = load + ' W';
+      $('val-bat').textContent = soc + ' %';
+      $('val-bat-w').textContent = (charge > 0 ? '+' + charge : (discharge > 0 ? '-' + discharge : '0')) + ' W';
+      $('val-grid').textContent = Math.abs(grid) + ' W';
+      $('st-grid').textContent = grid > 0 ? 'Đang mua' : (grid < 0 ? 'Đang bán' : 'Nghỉ');
+      $('val-avail').innerHTML = (avail > 0 ? '+' : '') + avail + '<span>W</span>';
+      $('sum-bat').innerHTML = soc + '<span>%</span>';
+      $('bar-bat').style.width = Math.max(0, Math.min(100, soc)) + '%';
 
-    // Chiều dòng chảy: PV -> biến tần -> tải; pin sạc = biến tần -> pin; mua điện = lưới -> biến tần
-    updateFlow('line-pv', pv, COLORS.pv, false);
-    updateFlow('line-load', load, COLORS.load, false);
-    if (charge > 0) updateFlow('line-bat', charge, COLORS.bat, false);
-    else updateFlow('line-bat', discharge, COLORS.bat, true);
-    if (gridIn > 0) updateFlow('line-grid', gridIn, COLORS.grid, false);
-    else updateFlow('line-grid', gridOut, COLORS.grid, true);
+      // Chiều dòng chảy: PV -> biến tần -> tải; pin sạc = biến tần -> pin; mua điện = lưới -> biến tần
+      updateFlow('line-pv', pv, COLORS.pv, false);
+      updateFlow('line-load', load, COLORS.load, false);
+      if (charge > 0) updateFlow('line-bat', charge, COLORS.bat, false);
+      else updateFlow('line-bat', discharge, COLORS.bat, true);
+      if (gridIn > 0) updateFlow('line-grid', gridIn, COLORS.grid, false);
+      else updateFlow('line-grid', gridOut, COLORS.grid, true);
 
-    if (data.ts) {
-      lastTs = data.ts;
-      $('time').textContent = new Date(data.ts * 1000).toLocaleTimeString('vi-VN');
-    }
-    refreshChip();
-  });
-
-  // Trạng thái công tắc
-  database.ref('/Controls').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (!data) return;
-    ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
-      if (data[k] === undefined) return;
-      document.getElementById('btn_' + k).checked = !!data[k];
-      const d = document.getElementById('d_' + k);
-      d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
-      d.classList.toggle('on', !!data[k]);
+      if (data.ts) {
+        lastTs = data.ts;
+        $('time').textContent = new Date(data.ts * 1000).toLocaleTimeString('vi-VN');
+      }
+      refreshChip();
     });
-  });
 
-  // Cấu hình Auto
-  database.ref('/Config').on('value', (snapshot) => {
-    const data = snapshot.val();
-    if (!data) return;
-    const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v; };
-    set('auto_on_h', data.onH); set('auto_off_h', data.offH);
-    set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
-    set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
-    document.getElementById('summer_mode').checked = parseInt(data.summer) === 1;
-  });
+    // Trạng thái công tắc
+    database.ref('/Controls').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+      ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
+        if (data[k] === undefined) return;
+        document.getElementById('btn_' + k).checked = !!data[k];
+        const d = document.getElementById('d_' + k);
+        d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
+        d.classList.toggle('on', !!data[k]);
+      });
+    });
+
+    // Cấu hình Auto
+    database.ref('/Config').on('value', (snapshot) => {
+      const data = snapshot.val();
+      if (!data) return;
+      const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v; };
+      set('auto_on_h', data.onH); set('auto_off_h', data.offH);
+      set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
+      set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
+      document.getElementById('summer_mode').checked = parseInt(data.summer) === 1;
+    });
+  }
 
   function toggleDev(devName) {
     const isChecked = document.getElementById('btn_' + devName).checked;
@@ -382,6 +450,130 @@ nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px
       .catch(() => toast('Lưu thất bại. Thử lại sau.'))
       .finally(() => { btn.disabled = false; btn.textContent = 'Lưu cài đặt Auto'; });
   }
+
+  // ===== ĐĂNG NHẬP / TÀI KHOẢN =====
+  // Thông tin đăng nhập lưu ở /Auth trong Firebase: { user, salt, hash } (mật khẩu được băm PBKDF2, không lưu dạng chữ thường).
+  // Chưa có /Auth thì dùng tài khoản mặc định admin / admin.
+  const AUTH_PATH = '/Auth';
+  const SESSION_KEY = 'lux_session';
+  const enc = new TextEncoder();
+  let currentUser = '', usingDefault = false, fails = 0, lockUntil = 0;
+  const $id = (id) => document.getElementById(id);
+
+  function hex(buf) { return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join(''); }
+  function newSalt() { return hex(crypto.getRandomValues(new Uint8Array(16))); }
+  async function hashPw(pw, salt) {
+    const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
+    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 100000 }, key, 256);
+    return hex(bits);
+  }
+  async function getAuth() { return (await database.ref(AUTH_PATH).once('value')).val(); }
+  async function verify(user, pw) {
+    const rec = await getAuth();
+    if (!rec) return { ok: user.trim().toLowerCase() === 'admin' && pw === 'admin', rec: null };
+    const h = await hashPw(pw, rec.salt);
+    return { ok: user.trim().toLowerCase() === String(rec.user).toLowerCase() && h === rec.hash, rec };
+  }
+  function saveSession(user, token, remember) {
+    try {
+      localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
+      (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify({ u: user, t: token }));
+    } catch (e) {}
+  }
+  function readSession() {
+    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)); } catch (e) { return null; }
+  }
+  function enter(user, isDefault) {
+    currentUser = user; usingDefault = isDefault;
+    $id('acc_cur').textContent = user;
+    $id('acc_default').hidden = !isDefault;
+    document.body.classList.remove('locked');
+    startApp();
+  }
+  function togglePw(id, btn) {
+    const el = $id(id);
+    const show = el.type === 'password';
+    el.type = show ? 'text' : 'password';
+    btn.textContent = show ? 'Ẩn' : 'Hiện';
+  }
+
+  async function doLogin(e) {
+    e.preventDefault();
+    const err = $id('lg_err'), btn = $id('lg_btn');
+    err.textContent = '';
+    if (!window.crypto || !crypto.subtle) { err.textContent = 'Trình duyệt không hỗ trợ mã hoá. Hãy mở trang bằng HTTPS.'; return false; }
+    const wait = Math.ceil((lockUntil - Date.now()) / 1000);
+    if (wait > 0) { err.textContent = 'Sai quá nhiều lần. Thử lại sau ' + wait + ' giây.'; return false; }
+    btn.disabled = true; btn.textContent = 'Đang kiểm tra...';
+    try {
+      const user = $id('lg_user').value, pw = $id('lg_pass').value;
+      const r = await verify(user, pw);
+      if (r.ok) {
+        fails = 0;
+        saveSession(r.rec ? r.rec.user : 'admin', r.rec ? r.rec.hash : 'default', $id('lg_remember').checked);
+        $id('lg_pass').value = '';
+        enter(r.rec ? r.rec.user : 'admin', !r.rec);
+      } else {
+        if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; }
+        err.textContent = 'Sai tên người dùng hoặc mật khẩu.';
+      }
+    } catch (ex) {
+      err.textContent = 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Đăng nhập';
+    }
+    return false;
+  }
+
+  async function restoreSession() {
+    const s = readSession();
+    if (!s) return;
+    try {
+      const rec = await getAuth();
+      if (s.t === (rec ? rec.hash : 'default')) enter(rec ? rec.user : 'admin', !rec);
+      else { try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
+    } catch (e) {}
+  }
+
+  function logout() {
+    try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+    location.reload();
+  }
+
+  async function changeAccount(e) {
+    e.preventDefault();
+    const err = $id('ac_err'), btn = $id('ac_btn');
+    err.textContent = '';
+    const newU = $id('ac_user').value.trim();
+    const newP = $id('ac_new').value, newP2 = $id('ac_new2').value, cur = $id('ac_cur').value;
+    if (!newU && !newP) { err.textContent = 'Hãy nhập tên mới hoặc mật khẩu mới.'; return false; }
+    if (newU && newU.length < 3) { err.textContent = 'Tên người dùng tối thiểu 3 ký tự.'; return false; }
+    if (newU && /\s/.test(newU)) { err.textContent = 'Tên người dùng không được chứa khoảng trắng.'; return false; }
+    if (newP && newP.length < 6) { err.textContent = 'Mật khẩu mới tối thiểu 6 ký tự.'; return false; }
+    if (newP && newP !== newP2) { err.textContent = 'Hai lần nhập mật khẩu mới không khớp.'; return false; }
+    btn.disabled = true; btn.textContent = 'Đang lưu...';
+    try {
+      const r = await verify(currentUser, cur);
+      if (!r.ok) { err.textContent = 'Mật khẩu hiện tại không đúng.'; return false; }
+      const user = newU || currentUser, pw = newP || cur;
+      const salt = newSalt(), hash = await hashPw(pw, salt);
+      await database.ref(AUTH_PATH).set({ user: user, salt: salt, hash: hash, updated: Date.now() });
+      const remember = !!localStorage.getItem(SESSION_KEY);
+      saveSession(user, hash, remember);
+      currentUser = user; usingDefault = false;
+      $id('acc_cur').textContent = user;
+      $id('acc_default').hidden = true;
+      ['ac_user', 'ac_new', 'ac_new2', 'ac_cur'].forEach((id) => { $id(id).value = ''; });
+      toast('Đã cập nhật tài khoản');
+    } catch (ex) {
+      err.textContent = 'Lưu thất bại. Kiểm tra kết nối rồi thử lại.';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Lưu thay đổi';
+    }
+    return false;
+  }
+
+  restoreSession();
 </script>
 </body>
 </html>
