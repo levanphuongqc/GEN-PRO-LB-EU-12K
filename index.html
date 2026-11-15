@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1f1d">
+<title>LuxPower GEN PRO-LB-EU 12K – Quản lý điện mặt trời</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<style>
+:root{
+  --bg:#e9efe8; --surface:#ffffff; --surface2:#f3f7f2; --ink:#12302b; --muted:#6a7f7a; --line:#d5dfd9;
+  --pv:#f0a000; --bat:#18a574; --grid:#3a6fd8; --load:#e0553a; --accent:#12302b; --on-accent:#fff;
+  --hero:#12302b; --hero-ink:#eaf5ef; --hero-muted:#8fb0a6; --hero-line:#2c4a44; --shadow:0 1px 2px rgba(18,48,43,.06),0 8px 24px rgba(18,48,43,.06);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1514; --surface:#13231f; --surface2:#1a2e2a; --ink:#e6f2ed; --muted:#86a198; --line:#27403a;
+    --pv:#ffb629; --bat:#33c996; --grid:#6b97ff; --load:#ff7a5c; --accent:#ffb629; --on-accent:#1b1300;
+    --hero:#0f1e1b; --hero-ink:#e6f2ed; --hero-muted:#7f9b92; --hero-line:#28413b; --shadow:none;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased}
+.app{max-width:520px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px calc(env(safe-area-inset-bottom,0px) + 96px)}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--grid);outline-offset:2px;border-radius:10px}
+
+/* header */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+header h1{font-size:22px;font-weight:800;letter-spacing:-.02em;margin:0}
+header p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:99px;background:var(--surface);font-size:12.5px;font-weight:600;box-shadow:var(--shadow);white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.chip.live i{background:var(--bat);box-shadow:0 0 0 0 var(--bat);animation:pulse 2s infinite}
+.chip.stale i{background:var(--pv)}
+@keyframes pulse{70%{box-shadow:0 0 0 7px transparent}100%{box-shadow:0 0 0 0 transparent}}
+
+/* hero */
+.hero{background:var(--hero);color:var(--hero-ink);border-radius:28px;padding:20px 16px 8px;position:relative;overflow:hidden}
+.hero-top{display:flex;align-items:flex-end;justify-content:space-between;padding:0 6px}
+.hero-top small{display:block;font-size:13px;color:var(--hero-muted)}
+.hero-top b{font-size:40px;font-weight:800;letter-spacing:-.03em;line-height:1.1;font-variant-numeric:tabular-nums}
+.hero-top b span{font-size:18px;font-weight:600;margin-left:4px;color:var(--hero-muted)}
+.hero-top .sub{text-align:right}
+.hero-top .sub b{font-size:22px;color:var(--pv)}
+svg.flow{display:block;width:100%;height:auto;margin-top:4px}
+.flow .ln{fill:none;stroke:var(--hero-line);stroke-width:4;stroke-linecap:round;stroke-dasharray:2 10}
+.flow .ln.on{stroke-dasharray:7 9;animation:dash .9s linear infinite}
+.flow .ln.on.rev{animation-direction:reverse}
+@keyframes dash{to{stroke-dashoffset:-16}}
+.flow .ring{fill:var(--hero);stroke-width:2.5}
+.flow .nm{font-size:12px;fill:var(--hero-muted);font-weight:500}
+.flow .vl{font-size:16px;font-weight:700;fill:var(--hero-ink);font-variant-numeric:tabular-nums}
+.flow .st{font-size:11px;fill:var(--hero-muted)}
+.flow use{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* summary */
+.summary{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.tile{background:var(--surface);border-radius:22px;padding:16px;box-shadow:var(--shadow)}
+.tile small{color:var(--muted);font-size:13px;display:block}
+.tile b{font-size:28px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile b span{font-size:14px;font-weight:600;color:var(--muted);margin-left:3px}
+.bar{height:8px;border-radius:99px;background:var(--surface2);margin-top:10px;overflow:hidden}
+.bar div{height:100%;width:0;background:var(--bat);border-radius:99px;transition:width .6s}
+.note{text-align:center;color:var(--muted);font-size:12px;margin:16px 0 0}
+
+/* panels */
+.panel{display:none}
+.panel.active{display:block}
+.group{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:6px 18px;margin-bottom:14px}
+.group>h3{margin:14px 0 2px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
+.group>h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c,var(--bat))}
+.group>p.hint{margin:0 0 6px;color:var(--muted);font-size:13px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-top:1px solid var(--line)}
+.group>.row:first-of-type{border-top:0}
+.row .t{font-weight:600;font-size:15px}
+.row .d{font-size:12.5px;color:var(--muted);margin-top:1px}
+.row .d.on{color:var(--bat);font-weight:600}
+
+.switch{position:relative;flex:none;width:54px;height:32px}
+.switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer;z-index:1}
+.switch span{position:absolute;inset:0;border-radius:99px;background:var(--line);transition:background .25s}
+.switch span::before{content:"";position:absolute;left:4px;top:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .25s}
+.switch input:checked+span{background:var(--bat)}
+.switch input:checked+span::before{transform:translateX(22px)}
+.switch input:focus-visible+span{outline:3px solid var(--grid);outline-offset:2px}
+
+.field{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.group>.field:first-of-type{border-top:0}
+.field label{font-size:14px;font-weight:500;flex:1}
+.num{display:flex;align-items:center;width:118px;background:var(--surface2);border:2px solid transparent;border-radius:12px;padding:0 12px;transition:border-color .2s}
+.num:focus-within{border-color:var(--grid)}
+.num input{width:100%;min-width:0;border:0;background:none;padding:10px 0;font-weight:700;font-size:16px;text-align:right;outline:none;font-variant-numeric:tabular-nums}
+.num em{font-style:normal;color:var(--muted);font-size:13px;margin-left:6px}
+.btn-save{width:100%;padding:16px;border:0;border-radius:18px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;cursor:pointer;transition:transform .15s,opacity .2s}
+.btn-save:active{transform:scale(.98)}
+.btn-save:disabled{opacity:.6}
+.sync{text-align:center;color:var(--muted);font-size:12px;margin:10px 0 0}
+
+/* bottom nav */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none;z-index:20}
+nav .bar-nav{pointer-events:auto;display:flex;gap:4px;width:100%;max-width:420px;padding:6px;border-radius:24px;background:var(--surface);box-shadow:0 8px 30px rgba(10,30,26,.22);border:1px solid var(--line)}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border:0;border-radius:18px;background:none;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:background .2s,color .2s}
+.tab-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tab-btn.active{background:var(--accent);color:var(--on-accent)}
+
+/* toast */
+#toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 92px);transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:.3s;z-index:30;max-width:90%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-bat" viewBox="0 0 24 24"><rect x="2.5" y="7.5" width="17" height="9" rx="2.5"/><path d="M22 11v2M6.5 10.5v3M10 10.5v3"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24"><path d="M12 2.5L7 21.5M12 2.5l5 19M8.5 8h7M7.5 14h9M9 8l6.5 6M15 8L8.5 14"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11.5l9-8 9 8M5.5 10v10.5h13V10"/></symbol>
+  <symbol id="i-inv" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7 12h2.2l1.5-3.5 2.6 7 1.5-3.5H17"/></symbol>
+</svg>
+
+<div class="app">
+  <header>
+    <div>
+      <h1>LuxPower GEN PRO-LB-EU 12K</h1>
+      <p>Điện mặt trời tại nhà</p>
+    </div>
+    <div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div>
+  </header>
+
+  <!-- SƠ ĐỒ -->
+  <section id="tab0" class="panel active">
+    <div class="hero">
+      <div class="hero-top">
+        <div><small>Công suất mặt trời</small><b id="hero-pv">--<span>W</span></b></div>
+        <div class="sub"><small>Điện dư</small><b id="val-avail">--<span>W</span></b></div>
+      </div>
+      <svg class="flow" viewBox="0 0 340 340" role="img" aria-label="Sơ đồ dòng điện">
+        <path id="line-pv" class="ln" d="M170 76V138"/>
+        <path id="line-bat" class="ln" d="M138 170H84"/>
+        <path id="line-grid" class="ln" d="M256 170H202"/>
+        <path id="line-load" class="ln" d="M170 202V264"/>
+
+        <g style="color:var(--pv)">
+          <circle class="ring" cx="170" cy="46" r="30" stroke="currentColor"/>
+          <use href="#i-sun" x="156" y="32" width="28" height="28" stroke="currentColor"/>
+        </g>
+        <text class="nm" x="212" y="40">Mặt trời</text>
+        <text class="vl" x="212" y="58" id="val-pv">-- W</text>
+
+        <g style="color:var(--hero-ink)">
+          <circle class="ring" cx="170" cy="170" r="32" stroke="var(--hero-muted)"/>
+          <use href="#i-inv" x="155" y="155" width="30" height="30" stroke="currentColor"/>
+        </g>
+
+        <g style="color:var(--bat)">
+          <circle class="ring" cx="54" cy="170" r="30" stroke="currentColor"/>
+          <use href="#i-bat" x="40" y="156" width="28" height="28" stroke="currentColor"/>
+        </g>
+        <text class="vl" x="54" y="224" text-anchor="middle" id="val-bat">-- %</text>
+        <text class="st" x="54" y="241" text-anchor="middle" id="val-bat-w">-- W</text>
+
+        <g style="color:var(--grid)">
+          <circle class="ring" cx="286" cy="170" r="30" stroke="currentColor"/>
+          <use href="#i-grid" x="272" y="156" width="28" height="28" stroke="currentColor"/>
+        </g>
+        <text class="vl" x="286" y="224" text-anchor="middle" id="val-grid">-- W</text>
+        <text class="st" x="286" y="241" text-anchor="middle" id="st-grid">--</text>
+
+        <g style="color:var(--load)">
+          <circle class="ring" cx="170" cy="294" r="30" stroke="currentColor"/>
+          <use href="#i-home" x="156" y="280" width="28" height="28" stroke="currentColor"/>
+        </g>
+        <text class="nm" x="212" y="288">Tiêu thụ</text>
+        <text class="vl" x="212" y="306" id="val-load">-- W</text>
+      </svg>
+    </div>
+
+    <div class="summary">
+      <div class="tile"><small>Pin lưu trữ</small><b id="sum-bat">--<span>%</span></b><div class="bar"><div id="bar-bat"></div></div></div>
+      <div class="tile"><small>Cập nhật lúc</small><b id="time" style="font-size:22px;line-height:1.9">--:--:--</b></div>
+    </div>
+    <p class="note">Dữ liệu đồng bộ trực tiếp từ Firebase</p>
+  </section>
+
+  <!-- ĐIỀU KHIỂN -->
+  <section id="tab1" class="panel">
+    <div class="group">
+      <h3>Chế độ</h3>
+      <div class="row">
+        <div><div class="t">Tự động (Auto)</div><div class="d" id="d_Auto">--</div></div>
+        <label class="switch"><input type="checkbox" id="btn_Auto" onchange="toggleDev('Auto')" aria-label="Chế độ Auto"><span></span></label>
+      </div>
+    </div>
+    <div class="group">
+      <h3 style="--c:var(--load)">Thiết bị</h3>
+      <div class="row">
+        <div><div class="t">Bình nóng 1</div><div class="d" id="d_BNNong1">--</div></div>
+        <label class="switch"><input type="checkbox" id="btn_BNNong1" onchange="toggleDev('BNNong1')" aria-label="Bình nóng 1"><span></span></label>
+      </div>
+      <div class="row">
+        <div><div class="t">Bình nóng 2</div><div class="d" id="d_BNNong2">--</div></div>
+        <label class="switch"><input type="checkbox" id="btn_BNNong2" onchange="toggleDev('BNNong2')" aria-label="Bình nóng 2"><span></span></label>
+      </div>
+    </div>
+  </section>
+
+  <!-- CÀI ĐẶT AUTO -->
+  <section id="tab2" class="panel">
+    <div class="group">
+      <h3 style="--c:var(--pv)">Lịch chạy Auto</h3>
+      <div class="field"><label for="auto_on_h">Tự động bật Auto lúc</label><div class="num"><input type="number" inputmode="numeric" id="auto_on_h"><em>giờ</em></div></div>
+      <div class="field"><label for="auto_off_h">Tự động tắt Auto lúc</label><div class="num"><input type="number" inputmode="numeric" id="auto_off_h"><em>giờ</em></div></div>
+      <div class="row">
+        <div><div class="t">Chế độ mùa hè</div><div class="d">Bật để không tự bật Auto</div></div>
+        <label class="switch"><input type="checkbox" id="summer_mode" aria-label="Chế độ mùa hè"><span></span></label>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3 style="--c:var(--load)">Bình nóng 1</h3>
+      <div class="field"><label for="b1_on">Bật khi điện dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
+      <div class="field"><label for="b1_off">Tắt khi điện dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
+      <div class="field"><label for="b1_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b1_soc"><em>%</em></div></div>
+    </div>
+
+    <div class="group">
+      <h3 style="--c:var(--grid)">Bình nóng 2</h3>
+      <div class="field"><label for="b2_on">Bật khi điện dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_on"><em>W</em></div></div>
+      <div class="field"><label for="b2_off">Tắt khi điện dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_off"><em>W</em></div></div>
+      <div class="field"><label for="b2_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
+    </div>
+
+    <button type="button" class="btn-save" id="btn-save" onclick="saveConfig()">Lưu cài đặt Auto</button>
+    <p class="sync">ESP32 sẽ cập nhật sau tối đa 30 giây</p>
+  </section>
+</div>
+
+<nav aria-label="Điều hướng">
+  <div class="bar-nav">
+    <button type="button" id="btn0" class="tab-btn active" onclick="openTab(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Sơ đồ</button>
+    <button type="button" id="btn1" class="tab-btn" onclick="openTab(1)"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Điều khiển</button>
+    <button type="button" id="btn2" class="tab-btn" onclick="openTab(2)"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Auto</button>
+  </div>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  function openTab(t) {
+    for (let i = 0; i < 3; i++) {
+      document.getElementById('tab' + i).classList.toggle('active', i === t);
+      document.getElementById('btn' + i).classList.toggle('active', i === t);
+    }
+    window.scrollTo({ top: 0 });
+  }
+
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // --- API KEY VÀ URL FIREBASE ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyBFyvyXb9Nvt4T2PK5BMj0S3A3QcdtqWh4",
+    databaseURL: "https://luxpowerweb-default-rtdb.asia-southeast1.firebasedatabase.app"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  const COLORS = { pv: 'var(--pv)', bat: 'var(--bat)', grid: 'var(--grid)', load: 'var(--load)' };
+  function updateFlow(id, val, color, isReverse) {
+    const p = document.getElementById(id);
+    const on = val > 10;
+    p.classList.toggle('on', on);
+    p.classList.toggle('rev', on && isReverse);
+    p.style.stroke = on ? color : '';
+  }
+
+  let lastTs = 0;
+  function refreshChip() {
+    const chip = document.getElementById('chip');
+    const txt = document.getElementById('chip-t');
+    chip.classList.remove('live', 'stale');
+    if (!lastTs) { txt.textContent = 'Đang kết nối'; return; }
+    const age = Date.now() / 1000 - lastTs;
+    if (age < 120) { chip.classList.add('live'); txt.textContent = 'Trực tuyến'; }
+    else { chip.classList.add('stale'); txt.textContent = 'Dữ liệu cũ'; }
+  }
+  setInterval(refreshChip, 10000);
+
+  // Dữ liệu Inverter
+  database.ref('/Inverter').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    const pv = data.PV || 0, load = data.Load || 0, soc = data.Battery || 0;
+    const charge = data.BatCharge || 0, discharge = data.BatDischarge || 0;
+    const gridIn = data.GridImport || 0, gridOut = data.GridExport || 0;
+    const grid = gridIn - gridOut;
+    const avail = pv - load;
+    const $ = (id) => document.getElementById(id);
+
+    $('val-pv').textContent = pv + ' W';
+    $('hero-pv').innerHTML = pv + '<span>W</span>';
+    $('val-load').textContent = load + ' W';
+    $('val-bat').textContent = soc + ' %';
+    $('val-bat-w').textContent = (charge > 0 ? '+' + charge : (discharge > 0 ? '-' + discharge : '0')) + ' W';
+    $('val-grid').textContent = Math.abs(grid) + ' W';
+    $('st-grid').textContent = grid > 0 ? 'Đang mua' : (grid < 0 ? 'Đang bán' : 'Nghỉ');
+    $('val-avail').innerHTML = (avail > 0 ? '+' : '') + avail + '<span>W</span>';
+    $('sum-bat').innerHTML = soc + '<span>%</span>';
+    $('bar-bat').style.width = Math.max(0, Math.min(100, soc)) + '%';
+
+    // Chiều dòng chảy: PV -> biến tần -> tải; pin sạc = biến tần -> pin; mua điện = lưới -> biến tần
+    updateFlow('line-pv', pv, COLORS.pv, false);
+    updateFlow('line-load', load, COLORS.load, false);
+    if (charge > 0) updateFlow('line-bat', charge, COLORS.bat, false);
+    else updateFlow('line-bat', discharge, COLORS.bat, true);
+    if (gridIn > 0) updateFlow('line-grid', gridIn, COLORS.grid, false);
+    else updateFlow('line-grid', gridOut, COLORS.grid, true);
+
+    if (data.ts) {
+      lastTs = data.ts;
+      $('time').textContent = new Date(data.ts * 1000).toLocaleTimeString('vi-VN');
+    }
+    refreshChip();
+  });
+
+  // Trạng thái công tắc
+  database.ref('/Controls').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
+      if (data[k] === undefined) return;
+      document.getElementById('btn_' + k).checked = !!data[k];
+      const d = document.getElementById('d_' + k);
+      d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
+      d.classList.toggle('on', !!data[k]);
+    });
+  });
+
+  // Cấu hình Auto
+  database.ref('/Config').on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (!data) return;
+    const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v; };
+    set('auto_on_h', data.onH); set('auto_off_h', data.offH);
+    set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
+    set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
+    document.getElementById('summer_mode').checked = parseInt(data.summer) === 1;
+  });
+
+  function toggleDev(devName) {
+    const isChecked = document.getElementById('btn_' + devName).checked;
+    database.ref('/Controls/' + devName).set(isChecked).catch(() => toast('Không gửi được lệnh. Kiểm tra kết nối.'));
+  }
+
+  function saveConfig() {
+    const v = (id) => parseInt(document.getElementById(id).value);
+    const config = {
+      onH: v('auto_on_h') || 7,
+      offH: v('auto_off_h') || 18,
+      b1on: v('b1_on') || 0,
+      b1off: v('b1_off') || 0,
+      b1soc: v('b1_soc') || 0,
+      b2on: v('b2_on') || 0,
+      b2off: v('b2_off') || 0,
+      b2soc: v('b2_soc') || 0,
+      summer: document.getElementById('summer_mode').checked ? 1 : 0
+    };
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true; btn.textContent = 'Đang lưu...';
+    database.ref('/Config').set(config)
+      .then(() => toast('Đã lưu cài đặt Auto'))
+      .catch(() => toast('Lưu thất bại. Thử lại sau.'))
+      .finally(() => { btn.disabled = false; btn.textContent = 'Lưu cài đặt Auto'; });
+  }
+</script>
+</body>
+</html>
