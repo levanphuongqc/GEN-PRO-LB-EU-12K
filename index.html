@@ -27,7 +27,7 @@
 html,body{margin:0}
 body{font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased}
 .app{max-width:520px;margin:0 auto;min-height:100vh;padding:calc(env(safe-area-inset-top,0px) + 18px) 16px calc(env(safe-area-inset-bottom,0px) + 96px)}
-button,input{font:inherit;color:inherit}
+button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--grid);outline-offset:2px;border-radius:10px}
 
 /* header */
@@ -97,6 +97,13 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .num:focus-within{border-color:var(--grid)}
 .num input{width:100%;min-width:0;border:0;background:none;padding:10px 0;font-weight:700;font-size:16px;text-align:right;outline:none;font-variant-numeric:tabular-nums}
 .num em{font-style:normal;color:var(--muted);font-size:13px;margin-left:6px}
+.num.tm{width:150px}
+.field.col{display:block}
+.field.col label{display:block;margin-bottom:6px;color:var(--muted);font-size:13px}
+.sel{display:block;width:100%;background:var(--surface2);border:2px solid transparent;border-radius:12px;padding:0 8px;transition:border-color .2s}
+.sel:focus-within{border-color:var(--grid)}
+.sel select{width:100%;border:0;background:none;padding:11px 0;font-size:15px;outline:none}
+.sel option{background:var(--surface);color:var(--ink)}
 .btn-save{width:100%;padding:16px;border:0;border-radius:18px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:16px;cursor:pointer;transition:transform .15s,opacity .2s}
 .btn-save:active{transform:scale(.98)}
 .btn-save:disabled{opacity:.6}
@@ -261,6 +268,12 @@ body:not(.locked) #login{display:none}
     </div>
 
     <div class="group">
+      <h3 style="--c:var(--pv)">Thứ tự ưu tiên bình nóng</h3>
+      <div class="field col"><label for="prio">Khi điện dư, bình nào được bật trước</label><div class="sel"><select id="prio"><option value="1">Bình nóng 1 trước, rồi Bình nóng 2</option><option value="2">Bình nóng 2 trước, rồi Bình nóng 1</option></select></div></div>
+      <p class="hint">Bình đứng trước được bật trước và tắt sau cùng. Ngưỡng bật/tắt của từng bình vẫn đặt riêng bên dưới.</p>
+    </div>
+
+    <div class="group">
       <h3 style="--c:var(--load)">Bình nóng 1</h3>
       <div class="field"><label for="b1_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
       <div class="field"><label for="b1_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
@@ -274,8 +287,28 @@ body:not(.locked) #login{display:none}
       <div class="field"><label for="b2_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
     </div>
 
+    <div class="group">
+      <h3 style="--c:var(--load)">Hẹn giờ bình nóng 1</h3>
+      <div class="row">
+        <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
+        <label class="switch"><input type="checkbox" id="t1_en" aria-label="Hẹn giờ bình nóng 1"><span></span></label>
+      </div>
+      <div class="field"><label for="t1_on">Giờ bật</label><div class="num tm"><input type="time" id="t1_on"></div></div>
+      <div class="field"><label for="t1_off">Giờ tắt</label><div class="num tm"><input type="time" id="t1_off"></div></div>
+    </div>
+
+    <div class="group">
+      <h3 style="--c:var(--grid)">Hẹn giờ bình nóng 2</h3>
+      <div class="row">
+        <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
+        <label class="switch"><input type="checkbox" id="t2_en" aria-label="Hẹn giờ bình nóng 2"><span></span></label>
+      </div>
+      <div class="field"><label for="t2_on">Giờ bật</label><div class="num tm"><input type="time" id="t2_on"></div></div>
+      <div class="field"><label for="t2_off">Giờ tắt</label><div class="num tm"><input type="time" id="t2_off"></div></div>
+    </div>
+
     <button type="button" class="btn-save" id="btn-save" onclick="saveConfig()">Lưu cài đặt Auto</button>
-    <p class="sync">ESP32 sẽ cập nhật sau tối đa 30 giây</p>
+    <p class="sync">ESP32 sẽ cập nhật sau tối đa 60 giây</p>
   </section>
 
   <!-- TÀI KHOẢN -->
@@ -422,6 +455,13 @@ body:not(.locked) #login{display:none}
       set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
       set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
       document.getElementById('summer_mode').checked = parseInt(data.summer) === 1;
+      if (data.prio !== undefined) document.getElementById('prio').value = (parseInt(data.prio) === 2) ? '2' : '1';
+      const hm = (m) => { m = parseInt(m); if (isNaN(m) || m < 0 || m > 1439) return ''; return String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0'); };
+      ['t1', 't2'].forEach((p) => {
+        document.getElementById(p + '_en').checked = parseInt(data[p + 'en']) === 1;
+        document.getElementById(p + '_on').value = hm(data[p + 'on']);
+        document.getElementById(p + '_off').value = hm(data[p + 'off']);
+      });
     });
   }
 
@@ -432,6 +472,20 @@ body:not(.locked) #login{display:none}
 
   function saveConfig() {
     const v = (id) => parseInt(document.getElementById(id).value);
+    // Giờ hẹn gửi lên Firebase dưới dạng số phút trong ngày (0-1439), -1 = chưa đặt
+    const tmin = (id) => {
+      const m = /^(\d{1,2}):(\d{2})/.exec(document.getElementById(id).value);
+      if (!m) return -1;
+      const hh = +m[1], mm = +m[2];
+      return (hh > 23 || mm > 59) ? -1 : hh * 60 + mm;
+    };
+    const sch = {};
+    for (const p of ['t1', 't2']) {
+      const en = document.getElementById(p + '_en').checked;
+      const on = tmin(p + '_on'), off = tmin(p + '_off');
+      if (en && (on < 0 || off < 0 || on === off)) { toast('Bình nóng ' + p[1] + ': cần đặt giờ bật và giờ tắt khác nhau'); return; }
+      sch[p + 'en'] = en ? 1 : 0; sch[p + 'on'] = on; sch[p + 'off'] = off;
+    }
     const config = {
       onH: v('auto_on_h') || 7,
       offH: v('auto_off_h') || 18,
@@ -441,7 +495,9 @@ body:not(.locked) #login{display:none}
       b2on: v('b2_on') || 0,
       b2off: v('b2_off') || 0,
       b2soc: v('b2_soc') || 0,
-      summer: document.getElementById('summer_mode').checked ? 1 : 0
+      summer: document.getElementById('summer_mode').checked ? 1 : 0,
+      prio: document.getElementById('prio').value === '2' ? 2 : 1,
+      ...sch
     };
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.textContent = 'Đang lưu...';
