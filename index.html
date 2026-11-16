@@ -316,12 +316,12 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     <div class="group">
       <h3 style="--c:var(--load)">Thiết bị</h3>
       <div class="row">
-        <div><div class="t">Bình nóng 1</div><div class="d" id="d_BNNong1">--</div></div>
-        <label class="switch"><input type="checkbox" id="btn_BNNong1" onchange="toggleDev('BNNong1')" aria-label="Bình nóng 1"><span></span></label>
+        <div><div class="t">Bình nước nóng 1</div><div class="d" id="d_BNNong1">--</div></div>
+        <label class="switch"><input type="checkbox" id="btn_BNNong1" onchange="toggleDev('BNNong1')" aria-label="Bình nước nóng 1"><span></span></label>
       </div>
       <div class="row">
-        <div><div class="t">Bình nóng 2</div><div class="d" id="d_BNNong2">--</div></div>
-        <label class="switch"><input type="checkbox" id="btn_BNNong2" onchange="toggleDev('BNNong2')" aria-label="Bình nóng 2"><span></span></label>
+        <div><div class="t">Bình nước nóng 2</div><div class="d" id="d_BNNong2">--</div></div>
+        <label class="switch"><input type="checkbox" id="btn_BNNong2" onchange="toggleDev('BNNong2')" aria-label="Bình nước nóng 2"><span></span></label>
       </div>
     </div>
   </section>
@@ -339,40 +339,40 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     </div>
 
     <div class="group">
-      <h3 style="--c:var(--pv)">Thứ tự ưu tiên bình nóng</h3>
-      <div class="field col"><label for="prio">Khi điện dư, bình nào được bật trước</label><div class="sel"><select id="prio"><option value="1">Bình nóng 1 trước, rồi Bình nóng 2</option><option value="2">Bình nóng 2 trước, rồi Bình nóng 1</option></select></div></div>
+      <h3 style="--c:var(--pv)">Thứ tự ưu tiên bình nước nóng</h3>
+      <div class="field col"><label for="prio">Khi điện dư, bình nào được bật trước</label><div class="sel"><select id="prio"><option value="1">Bình nước nóng 1 trước, rồi Bình nước nóng 2</option><option value="2">Bình nước nóng 2 trước, rồi Bình nước nóng 1</option></select></div></div>
       <p class="hint">Bình đứng trước được bật trước và tắt sau cùng. Ngưỡng bật/tắt của từng bình vẫn đặt riêng bên dưới.</p>
     </div>
 
     <div class="group">
-      <h3 style="--c:var(--load)">Bình nóng 1</h3>
+      <h3 style="--c:var(--load)">Bình nước nóng 1</h3>
       <div class="field"><label for="b1_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
       <div class="field"><label for="b1_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
       <div class="field"><label for="b1_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b1_soc"><em>%</em></div></div>
     </div>
 
     <div class="group">
-      <h3 style="--c:var(--grid)">Bình nóng 2</h3>
+      <h3 style="--c:var(--grid)">Bình nước nóng 2</h3>
       <div class="field"><label for="b2_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_on"><em>W</em></div></div>
       <div class="field"><label for="b2_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_off"><em>W</em></div></div>
       <div class="field"><label for="b2_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
     </div>
 
     <div class="group">
-      <h3 style="--c:var(--load)">Hẹn giờ bình nóng 1</h3>
+      <h3 style="--c:var(--load)">Hẹn giờ bình nước nóng 1</h3>
       <div class="row">
         <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
-        <label class="switch"><input type="checkbox" id="t1_en" aria-label="Hẹn giờ bình nóng 1"><span></span></label>
+        <label class="switch"><input type="checkbox" id="t1_en" aria-label="Hẹn giờ bình nước nóng 1"><span></span></label>
       </div>
       <div class="field"><label for="t1_on">Giờ bật</label><div class="num tm"><input type="time" id="t1_on"></div></div>
       <div class="field"><label for="t1_off">Giờ tắt</label><div class="num tm"><input type="time" id="t1_off"></div></div>
     </div>
 
     <div class="group">
-      <h3 style="--c:var(--grid)">Hẹn giờ bình nóng 2</h3>
+      <h3 style="--c:var(--grid)">Hẹn giờ bình nước nóng 2</h3>
       <div class="row">
         <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
-        <label class="switch"><input type="checkbox" id="t2_en" aria-label="Hẹn giờ bình nóng 2"><span></span></label>
+        <label class="switch"><input type="checkbox" id="t2_en" aria-label="Hẹn giờ bình nước nóng 2"><span></span></label>
       </div>
       <div class="field"><label for="t2_on">Giờ bật</label><div class="num tm"><input type="time" id="t2_on"></div></div>
       <div class="field"><label for="t2_off">Giờ tắt</label><div class="num tm"><input type="time" id="t2_off"></div></div>
@@ -568,7 +568,7 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     for (const p of ['t1', 't2']) {
       const en = document.getElementById(p + '_en').checked;
       const on = tmin(p + '_on'), off = tmin(p + '_off');
-      if (en && (on < 0 || off < 0 || on === off)) { toast('Bình nóng ' + p[1] + ': cần đặt giờ bật và giờ tắt khác nhau'); return; }
+      if (en && (on < 0 || off < 0 || on === off)) { toast('Bình nước nóng ' + p[1] + ': cần đặt giờ bật và giờ tắt khác nhau'); return; }
       sch[p + 'en'] = en ? 1 : 0; sch[p + 'on'] = on; sch[p + 'off'] = off;
     }
     const config = {
