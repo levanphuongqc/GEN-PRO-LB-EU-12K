@@ -450,6 +450,12 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       <p class="err" id="ac_err" role="alert" style="color:var(--load)"></p>
       <button type="submit" class="btn-save" id="ac_btn" style="margin-bottom:14px">Lưu thay đổi</button>
     </form>
+    <div class="group" id="fw-group">
+      <h3 style="--c:var(--bat)">Cập nhật firmware</h3>
+      <p class="hint">Nạp file <b>.ino.bin</b> mới cho mạch qua WiFi. Điện thoại/máy tính phải cùng mạng WiFi với mạch, vì trang nạp nằm trên mạch chứ không nằm trên mạng.</p>
+      <p class="hint">Địa chỉ mạch: <b id="fw-ip">--</b></p>
+      <a class="btn-test" id="fw-link" href="#" target="_blank" rel="noopener" style="text-decoration:none;display:inline-block;margin:6px 0 10px" aria-disabled="true">Mở trang cập nhật</a>
+    </div>
     <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
   </section>
   <section id="tab5" class="panel">
@@ -602,6 +608,10 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       $('sv-ram').textContent = 'RAM ' + nf(data.HeapKB, 0) + (data.HeapTotalKB ? '/' + data.HeapTotalKB : '') + ' KB';
       $('sv-psram').textContent = 'PSRAM ' + mb(data.PsramKB) + (data.PsramTotalKB ? '/' + mb(data.PsramTotalKB) : '') + ' MB';
       $('sv-cpu').textContent = 'CPU ' + nf(data.CpuPct, 0) + '%';
+      if (data.IP && /^\d{1,3}(\.\d{1,3}){3}$/.test(data.IP)) {      // IP mạch do ESP32 báo lên; chỉ nhận đúng dạng IPv4
+        $('fw-ip').textContent = data.IP;
+        const a = $('fw-link'); a.href = 'http://' + data.IP + '/update'; a.removeAttribute('aria-disabled'); a.style.opacity = '';
+      }
 
       // Chiều dòng chảy: PV -> biến tần -> tải; pin sạc = biến tần -> pin; mua điện = lưới -> biến tần
       setLine('line-pv', 'fl-pv', null, pv > 10, false);
