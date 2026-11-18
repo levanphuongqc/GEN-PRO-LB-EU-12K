@@ -59,6 +59,8 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .flow .nm{font-size:12px;fill:var(--hero-muted);font-weight:500}
 .flow .vl{font-size:16px;font-weight:700;fill:var(--hero-ink);font-variant-numeric:tabular-nums}
 .flow .st{font-size:11px;fill:var(--hero-muted)}
+.iv-txt{font-size:15px;line-height:1.3;text-align:right;white-space:normal;max-width:58%}
+.iv-val{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .flow .tl{font-size:10px;fill:var(--hero-muted)}
 .flow .tv{font-size:13px;font-weight:700;fill:var(--hero-ink);font-variant-numeric:tabular-nums}
 .flow use{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -303,8 +305,6 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 
         <text class="tl" x="116" y="146" text-anchor="middle">Tản nhiệt 1</text>
         <text class="tv" x="116" y="159" text-anchor="middle" id="tp-r1">-- °C</text>
-        <text class="tl" x="116" y="186" text-anchor="middle">Trong</text>
-        <text class="tv" x="116" y="200" text-anchor="middle" id="tp-in">-- °C</text>
         <text class="tl" x="228" y="146" text-anchor="middle">Tản nhiệt 2</text>
         <text class="tv" x="228" y="159" text-anchor="middle" id="tp-r2">-- °C</text>
 
@@ -470,6 +470,20 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     </div>
     <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
   </section>
+  <section id="tab6" class="panel">
+    <div class="group"><h3>Cài đặt biến tần</h3>
+      <div class="row"><div><div class="t">Battery Warning SOC</div><div class="d">Cảnh báo pin yếu khi SOC xuống dưới mức này (thanh ghi 164)</div></div><b class="iv-val" id="iv-wsoc">-- %</b></div>
+      <div class="row"><div><div class="t">Source Priority (Ưu tiên nguồn)</div><div class="d">Thứ tự nguồn cấp cho tải (thanh ghi 145)</div></div><b class="iv-val iv-txt" id="iv-prio">--</b></div>
+    </div>
+    <div class="group"><h3>Thay đổi cài đặt</h3>
+      <div class="field col"><label for="iv-in-wsoc">Battery Warning SOC (%)</label><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" oninput="invDirty.w=true"></div></div>
+      <div class="field col"><label for="iv-in-prio">Source Priority (Ưu tiên nguồn)</label><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option></select></div></div>
+      <p class="sync" id="iv-hint"></p>
+      <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
+      <p class="sync" id="iv-status"></p>
+    </div>
+    <p class="note">Số liệu đọc trực tiếp từ biến tần, cập nhật 5 phút một lần. Giá trị ghi được lưu trong biến tần.</p>
+  </section>
   <section id="tab5" class="panel">
     <div class="group"><h3>Điện năng (kWh)</h3><div style="overflow-x:auto"><table class="stt" id="st-table"></table></div></div>
     <div class="group"><h3>Biểu đồ</h3>
@@ -489,6 +503,7 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
   <div class="bar-nav">
     <button type="button" id="btn0" class="tab-btn active" onclick="openTab(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Sơ đồ</button>
     <button type="button" id="btn5" class="tab-btn" onclick="openTab(5)"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Thống kê</button>
+    <button type="button" id="btn6" class="tab-btn" onclick="openTab(6)"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7 12h2.2l1.5-3.5 2.6 7 1.5-3.5H17"/></svg>Biến tần</button>
     <button type="button" id="btn1" class="tab-btn" onclick="openTab(1)"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Điều khiển</button>
     <button type="button" id="btn2" class="tab-btn" onclick="openTab(2)"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Auto</button>
     <button type="button" id="btn3" class="tab-btn" onclick="openTab(3)"><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11"/></svg>Âm thanh</button>
@@ -498,8 +513,51 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
-  function openTab(t) {
-    for (let i = 0; i < 6; i++) {
+  const PRIO_NAMES = ['Solar > Battery > Grid (SBU)', 'Solar > Grid > Battery (SUB)', 'Grid > Solar > Battery (AC first)'];
+const invDirty = { w: false, p: false };
+const invCur = { w: null, p: null, r: null };
+let invWait = null;
+const invEl = (id) => document.getElementById(id);
+function invSync(d) {
+  invCur.w = d.SetBatWarnSoc == null ? null : +d.SetBatWarnSoc;
+  invCur.p = d.SetSrcPrio == null ? null : +d.SetSrcPrio;
+  invCur.r = d.SetBatRecSoc == null ? null : +d.SetBatRecSoc;
+  if (!invDirty.w && invCur.w != null) invEl('iv-in-wsoc').value = invCur.w;
+  if (!invDirty.p && invCur.p != null && invCur.p <= 1) invEl('iv-in-prio').value = invCur.p;
+  invEl('iv-hint').textContent = 'Cho phép 0–90%' + (invCur.r != null ? ', phải nhỏ hơn mức phục hồi ' + invCur.r + '%' : '') + '.';
+  if (invWait && d.SetResId === invWait.id) { const w = invWait; invWait = null; w.done({ ok: !!d.SetResOk, msg: d.SetResMsg || '' }); }
+}
+function invSend(k, v) {   // gửi lệnh qua Firebase /Controls/InvSet, chờ mạch phản hồi qua /Inverter/SetRes*
+  return new Promise((resolve) => {
+    const id = Date.now() % 1000000000;
+    const t = setTimeout(() => { if (invWait && invWait.id === id) { invWait = null; resolve({ ok: false, msg: 'Hết thời gian chờ, mạch chưa phản hồi' }); } }, 45000);
+    invWait = { id, done: (r) => { clearTimeout(t); resolve(r); } };
+    database.ref('/Controls/InvSet').set({ k, v, id }).catch(() => { clearTimeout(t); invWait = null; resolve({ ok: false, msg: 'Không gửi được lệnh, kiểm tra kết nối' }); });
+  });
+}
+async function invApply() {
+  const btn = invEl('iv-apply'), st = invEl('iv-status');
+  const w = invEl('iv-in-wsoc').value.trim(), p = +invEl('iv-in-prio').value, wn = w === '' ? NaN : Number(w);
+  if (invCur.w == null || invCur.p == null) { toast('Chưa đọc được cài đặt hiện tại từ biến tần'); return; }
+  if (!Number.isInteger(wn) || wn < 0 || wn > 90) { toast('Battery Warning SOC phải là số nguyên từ 0 đến 90'); return; }
+  if (invCur.r != null && wn >= invCur.r) { toast('Mức cảnh báo phải nhỏ hơn mức phục hồi (' + invCur.r + '%)'); return; }
+  const jobs = [];
+  if (wn !== invCur.w) jobs.push({ k: 'wsoc', v: wn, t: 'Battery Warning SOC: ' + invCur.w + '% → ' + wn + '%' });
+  if (p !== invCur.p) jobs.push({ k: 'prio', v: p, t: 'Source Priority: ' + (PRIO_NAMES[invCur.p] || invCur.p) + ' → ' + PRIO_NAMES[p] });
+  if (!jobs.length) { st.textContent = 'Không có thay đổi để ghi'; return; }
+  if (!confirm('Ghi lên biến tần?\n\n' + jobs.map((j) => j.t).join('\n') + '\n\nCài đặt được lưu trong biến tần và áp dụng ngay.')) return;
+  btn.disabled = true;
+  for (const j of jobs) {
+    st.textContent = 'Đang ghi: ' + j.t + ' ...';
+    const r = await invSend(j.k, j.v);
+    if (!r.ok) { st.textContent = 'Lỗi: ' + r.msg; toast('Không ghi được: ' + r.msg); btn.disabled = false; return; }
+  }
+  invDirty.w = false; invDirty.p = false;
+  st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
+  btn.disabled = false;
+}
+function openTab(t) {
+    for (let i = 0; i < 7; i++) {
       document.getElementById('tab' + i).classList.toggle('active', i === t);
       document.getElementById('btn' + i).classList.toggle('active', i === t);
     }
@@ -613,7 +671,10 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       $('sv-dis').textContent = 'Xả ' + nf(data.DischargeDay, 1) + ' kWh';
       $('sv-grid').textContent = nf(data.GridVolt, 0) + ' V · ' + nf(data.GridHz, 2) + ' Hz';
       $('sv-load').textContent = 'Hôm nay ' + nf(data.LoadDay, 1) + ' kWh';
-      $('tp-in').textContent = nf(data.TempInner, 0) + ' °C'; $('tp-r1').textContent = nf(data.TempRad1, 0) + ' °C'; $('tp-r2').textContent = nf(data.TempRad2, 0) + ' °C';   // nhiệt độ biến tần (reg 64-66)
+      $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
+      try { invSync(data); } catch (e) {}
+      $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';   // Battery Warning SOC (holding reg 164)
+      $('tp-r1').textContent = nf(data.TempRad1, 0) + ' °C'; $('tp-r2').textContent = nf(data.TempRad2, 0) + ' °C';   // nhiệt độ biến tần (reg 64-66)
       const mb = (v) => (typeof v === 'number') ? (v / 1024).toFixed(1) : '--';
       const pvTxt = (i) => 'PV' + i + ' ' + nf(data['Pv' + i + 'W'], 0) + ' W · ' + nf(data['Pv' + i + 'V'], 1) + ' V';
       $('pv1').textContent = pvTxt(1); $('pv2').textContent = pvTxt(2); $('pv3').textContent = pvTxt(3);
