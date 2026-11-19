@@ -672,6 +672,11 @@ function pipOpenVideo() {
   let tried = false;
   const go = () => {
     if (tried) return; tried = true;
+    const standalone = navigator.standalone === true || (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+    if (standalone && !(v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture'))) {
+      toast('iOS không cho bật hình trong hình khi mở bằng biểu tượng Màn hình chính. Hãy mở trang bằng Safari.');
+      return;
+    }
     try {
       if (v.webkitSetPresentationMode && v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture')) v.webkitSetPresentationMode('picture-in-picture');
       else if (v.requestPictureInPicture) v.requestPictureInPicture().catch(fail);
