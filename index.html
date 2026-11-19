@@ -247,6 +247,14 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 .stt th{color:var(--muted);font-weight:600;font-size:11.5px}.stt td,.stt th{padding:9px 5px;text-align:right;border-bottom:1px solid var(--line)}
 .stt td:first-child,.stt th:first-child{text-align:left;font-weight:700}.stt tr:last-child td{border-bottom:0}
 .st-ctl{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 10px}.st-ctl select,.st-ctl input{flex:1;min-width:110px;padding:8px;border-radius:10px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);font:inherit;font-size:13px}
+
+/* ===== hình trong hình ===== */
+.pip-btn{position:absolute;top:10px;right:12px;width:30px;height:30px;border:0;border-radius:10px;background:rgba(255,255,255,.12);color:var(--hero-ink);display:grid;place-items:center;cursor:pointer;z-index:2;padding:0}
+.pip-btn[hidden]{display:none}
+.pip-btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.pip-btn.on{background:var(--pv);color:#1b1300}
+.pip-ph{background:var(--hero);color:var(--hero-muted);border-radius:clamp(20px,6vw,28px);padding:28px 16px;text-align:center;font-size:13.5px}
+.pip-ph button{margin-top:12px;border:0;border-radius:12px;padding:9px 16px;background:var(--pv);color:#1b1300;font-weight:700;cursor:pointer}
 </style>
 </head>
 <body class="locked">
@@ -292,7 +300,8 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 
   <!-- SƠ ĐỒ -->
   <section id="tab0" class="panel active">
-    <div class="hero">
+    <div class="hero" id="hero">
+      <button type="button" class="pip-btn" id="pip-btn" onclick="togglePip()" hidden aria-label="Hình trong hình" title="Hình trong hình"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><rect x="12" y="11.5" width="7" height="5" rx="1" fill="currentColor"/></svg></button>
       <div class="hero-time"><small>Cập nhật lúc</small><b id="time">--:--:--</b></div>
       <div class="hero-top">
         <div><small>Công suất mặt trời</small><b id="hero-pv">--<span>W</span></b><div class="pvs"><div id="pv1">PV1 -- W · -- V</div><div id="pv2">PV2 -- W · -- V</div><div id="pv3">PV3 -- W · -- V</div></div></div>
@@ -569,6 +578,177 @@ async function invApply() {
   st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
   btn.disabled = false;
 }
+
+// ===== HÌNH TRONG HÌNH (tab Sơ đồ) =====
+// Máy tính (Chrome/Edge 116+): cửa sổ nổi thật, dữ liệu vẫn cập nhật trực tiếp.
+// Điện thoại/trình duyệt khác: vẽ sơ đồ lên canvas rồi bật PiP của video.
+const PIP = { win: null, ph: null, hero: null, video: null, cv: null, timer: 0 };
+function byId(id) {
+  return document.getElementById(id) || (PIP.win && !PIP.win.closed ? PIP.win.document.getElementById(id) : null);
+}
+function pipSupport() {
+  if ('documentPictureInPicture' in window) return 'doc';
+  const v = document.createElement('video');
+  if (HTMLCanvasElement.prototype.captureStream && (v.requestPictureInPicture || v.webkitSetPresentationMode)) return 'video';
+  return '';
+}
+function pipBtnState(on) {
+  const b = document.getElementById('pip-btn') || (PIP.win && PIP.win.document.getElementById('pip-btn'));
+  if (b) b.classList.toggle('on', !!on);
+}
+async function togglePip() {
+  try {
+    if (PIP.win) { PIP.win.close(); return; }
+    if (PIP.video) { pipStopVideo(); return; }
+    if (pipSupport() === 'doc') await pipOpenDoc(); else await pipOpenVideo();
+  } catch (e) { toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e)); }
+}
+async function pipOpenDoc() {
+  const hero = document.getElementById('hero');
+  const r = hero.getBoundingClientRect();
+  const BW = 360;                                   // bề rộng thiết kế của khung, cửa sổ nổi chỉ thu/phóng khung này
+  const pw = await documentPictureInPicture.requestWindow({ width: BW, height: Math.round(r.height * BW / (r.width || BW)) || 470 });
+  document.querySelectorAll('link[rel="stylesheet"],style').forEach((n) => pw.document.head.appendChild(n.cloneNode(true)));
+  const ex = pw.document.createElement('style');
+  // cố định cỡ chữ/khoảng cách như ở bề rộng 360px để cửa sổ co nhỏ không làm bố cục đổi, chỉ thu phóng cả khung
+  ex.textContent = 'html{zoom:1!important}html,body{margin:0;height:100%;overflow:hidden;background:var(--hero)}' +
+    '.hero{position:absolute;left:0;top:0;width:' + BW + 'px;transform-origin:0 0;border-radius:0;padding:14.4px 10.8px 10.8px}' +
+    'svg.flow{max-height:none;width:100%;margin:4px 0 0}.pip-btn{display:none}' +
+    '.hero-top small{font-size:11.88px}.hero-top b{font-size:32.4px}.hero-top b span{font-size:13.68px}.hero-top .sub b{font-size:18.72px}' +
+    '.hero-time{margin:0 0 8.6px}.hero-time small{font-size:11.88px}.hero-time b{font-size:18px}.pvs{font-size:11.16px}' +
+    '.flow .nm{font-size:12px}.flow .vl{font-size:16px}';
+  pw.document.head.appendChild(ex);
+  const ph = document.createElement('div');
+  ph.className = 'pip-ph';
+  ph.innerHTML = 'Sơ đồ đang hiển thị ở cửa sổ nổi<br><button type="button" onclick="togglePip()">Đưa về lại đây</button>';
+  PIP.win = pw; PIP.hero = hero; PIP.ph = ph;
+  hero.replaceWith(ph);
+  pw.document.body.append(hero);
+  const fit = () => {
+    if (!PIP.win) return;
+    const bh = hero.offsetHeight || 1, iw = pw.innerWidth, ih = pw.innerHeight;
+    const k = Math.min(iw / BW, ih / bh);
+    hero.style.transform = 'translate(' + ((iw - BW * k) / 2) + 'px,' + ((ih - bh * k) / 2) + 'px) scale(' + k + ')';
+  };
+  pw.addEventListener('resize', fit);
+  fit(); setTimeout(fit, 300);
+  if (pw.document.fonts && pw.document.fonts.ready) pw.document.fonts.ready.then(fit);
+  pw.addEventListener('pagehide', pipRestoreDoc);
+  pipBtnState(true);
+}
+function pipRestoreDoc() {
+  if (PIP.ph && PIP.hero) { PIP.hero.removeAttribute('style'); PIP.ph.replaceWith(PIP.hero); }
+  PIP.win = null; PIP.ph = null; PIP.hero = null;
+  pipBtnState(false);
+}
+async function pipOpenVideo() {
+  const cv = document.createElement('canvas');
+  cv.width = 680; cv.height = 900;                  // tỷ lệ cố định 340:450 -> PiP thu nhỏ cả khung theo đúng tỷ lệ
+  PIP.cv = cv;
+  const v = document.createElement('video');
+  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.autoplay = true;
+  v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.setAttribute('muted', '');
+  v.disablePictureInPicture = false;
+  v.style.cssText = 'position:fixed;right:0;bottom:0;width:2px;height:2px;opacity:.02;pointer-events:none;z-index:-1';
+  document.body.appendChild(v);
+  pipPaint();
+  v.srcObject = cv.captureStream(10);
+  await v.play();
+  if (v.readyState < 1) await new Promise((res) => { v.addEventListener('loadedmetadata', res, { once: true }); setTimeout(res, 1500); });
+  PIP.video = v;
+  PIP.timer = setInterval(pipPaint, 500);
+  v.addEventListener('leavepictureinpicture', pipStopVideo);
+  v.addEventListener('webkitpresentationmodechanged', () => { if (v.webkitPresentationMode !== 'picture-in-picture') pipStopVideo(); });
+  try {
+    if (v.requestPictureInPicture) await v.requestPictureInPicture();
+    else v.webkitSetPresentationMode('picture-in-picture');
+  } catch (e) {
+    if (v.webkitSetPresentationMode) v.webkitSetPresentationMode('picture-in-picture');   // iOS Safari
+    else throw e;
+  }
+  pipBtnState(true);
+}
+function pipStopVideo() {
+  clearInterval(PIP.timer);
+  const v = PIP.video;
+  PIP.video = null; PIP.cv = null;
+  if (v) {
+    try { if (document.pictureInPictureElement === v) document.exitPictureInPicture(); } catch (e) {}
+    v.srcObject = null; v.remove();
+  }
+  pipBtnState(false);
+}
+const pipImgs = new Map();
+function pipImg(href) {
+  let im = pipImgs.get(href);
+  if (!im) { im = new Image(); im.src = href; pipImgs.set(href, im); }
+  return im.complete && im.naturalWidth ? im : null;
+}
+function pipPaint() {
+  const cv = PIP.cv; if (!cv) return;
+  const ctx = cv.getContext('2d'), W = 340, H = 450;
+  const cs = getComputedStyle(document.documentElement), col = (n) => cs.getPropertyValue(n).trim();
+  const ink = col('--hero-ink'), muted = col('--hero-muted');
+  const FONT = "'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif";
+  ctx.setTransform(2, 0, 0, 2, 0, 0);
+  ctx.fillStyle = col('--hero'); ctx.fillRect(0, 0, W, H);
+  const txt = (t, x, y, size, weight, color, align) => {
+    ctx.font = weight + ' ' + size + 'px ' + FONT; ctx.fillStyle = color; ctx.textAlign = align || 'left'; ctx.fillText(t, x, y);
+  };
+  const T = (id) => { const e = byId(id); return e ? e.textContent : '--'; };
+  const fixW = (s) => s.replace(/W$/, ' W');
+  txt('Cập nhật lúc ' + T('time'), W / 2, 22, 12, 500, muted, 'center');
+  txt('Công suất mặt trời', 14, 48, 12, 500, muted);
+  txt(fixW(T('hero-pv')), 14, 84, 32, 800, ink);
+  txt('Điện dư', W - 14, 48, 12, 500, muted, 'right');
+  txt(fixW(T('val-avail')), W - 14, 76, 20, 800, col('--pv'), 'right');
+  ctx.save(); ctx.translate(0, 100);
+  const svg = document.querySelector('svg.flow'); if (!svg) { ctx.restore(); return; }
+  const bg = byId('bat-g'), bk = bg && bg.classList.contains('low') ? 'dcL' : (bg && bg.classList.contains('mid') ? 'dcM' : 'dcN');
+  const lc = { 'line-pv': '--pv', 'line-bat': '--bat', 'line-grid': '--grid', 'line-load': '--load' };
+  const tcls = { nm: [12, 500, muted], vl: [16, 700, ink], st: [11, 400, muted], tl: [10, 400, muted], tv: [13, 700, ink] };
+  const applyT = (t) => {
+    if (!t) return;
+    const m = /translate\(([-\d.]+)[ ,]+([-\d.]+)\)/.exec(t); if (m) ctx.translate(+m[1], +m[2]);
+    const k = /scale\(([-\d.]+)\)/.exec(t); if (k) ctx.scale(+k[1], +k[1]);
+  };
+  const walk = (n) => {
+    for (const c of n.children) {
+      const tag = c.tagName.toLowerCase();
+      if (tag === 'defs' || c.classList.contains('fl')) continue;
+      if (tag === 'g') { ctx.save(); applyT(c.getAttribute('transform')); walk(c); ctx.restore(); }
+      else if (tag === 'image') {
+        const im = pipImg(c.getAttribute('href'));
+        if (im) ctx.drawImage(im, +c.getAttribute('x') || 0, +c.getAttribute('y') || 0, +c.getAttribute('width'), +c.getAttribute('height'));
+      } else if (tag === 'use' && c.parentNode.classList.contains('cell')) {
+        if (c.getAttribute('href') !== '#' + bk) continue;
+        const d = svg.querySelector('#' + bk), im = d && pipImg(d.getAttribute('href'));
+        if (im) { ctx.globalAlpha = parseFloat(c.parentNode.style.getPropertyValue('--o')) || 0; ctx.drawImage(im, 0, 0, 36, 9); ctx.globalAlpha = 1; }
+      } else if (tag === 'text') {
+        const s = tcls[[...c.classList].find((k) => tcls[k])] || [12, 400, ink];
+        txt(c.textContent, +c.getAttribute('x'), +c.getAttribute('y'), s[0], s[1], s[2],
+          c.getAttribute('text-anchor') === 'middle' ? 'center' : 'left');
+      } else if (tag === 'path' && c.classList.contains('ln')) {
+        const m = /M\s*([\d.]+)\s+([\d.]+)\s*([HV])\s*([\d.]+)/.exec(c.getAttribute('d') || ''); if (!m) continue;
+        const on = c.classList.contains('on');
+        ctx.beginPath(); ctx.moveTo(+m[1], +m[2]);
+        if (m[3] === 'H') ctx.lineTo(+m[4], +m[2]); else ctx.lineTo(+m[1], +m[4]);
+        ctx.lineWidth = 4; ctx.lineCap = 'round';
+        ctx.setLineDash(on ? [7, 9] : [2, 10]);
+        ctx.lineDashOffset = on ? -((Date.now() / 60) % 16) : 0;
+        ctx.strokeStyle = on ? col(lc[c.id] || '--pv') : col('--hero-line');
+        ctx.stroke(); ctx.setLineDash([]);
+      }
+    }
+  };
+  walk(svg);
+  ctx.restore();
+}
+document.addEventListener('DOMContentLoaded', () => {
+  if (!pipSupport()) return;
+  const b = document.getElementById('pip-btn'); if (b) b.hidden = false;
+});
+
 const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
   let lastSet = 2;
   function openTab(t) {
@@ -600,22 +780,22 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
   const database = firebase.database();
 
   // Mũi tên chạy khi có dòng điện; đường chấm mờ chỉ hiện lúc nghỉ
-  function setFl(id, on) { document.getElementById(id).classList.toggle('on', on); }
+  function setFl(id, on) { byId(id).classList.toggle('on', on); }
   function setLine(lnId, leftId, rightId, leftOn, rightOn) {
     setFl(leftId, leftOn);
     if (rightId) setFl(rightId, rightOn);          // đường 1 chiều (PV, tải) không có nhóm mũi tên thứ hai
-    document.getElementById(lnId).classList.toggle('on', leftOn || rightOn);
+    byId(lnId).classList.toggle('on', leftOn || rightOn);
   }
   // Pin: 5 ô, mỗi ô 20%. Sạc: ô đang nạp nhấp nháy sáng lên; xả: ô trên cùng nhấp nháy mờ đi. Pin thấp đổi màu.
   function updateBattery(soc, charging, discharging) {
     const s = soc >= 95 ? 100 : Math.max(0, soc);      // từ 95% trở lên hiển thị đủ 5 ô
-    const g = document.getElementById('bat-g');
+    const g = byId('bat-g');
     g.classList.toggle('low', s <= 15);
     g.classList.toggle('mid', s > 15 && s <= 30);
     const fillIdx = Math.min(4, Math.floor(s / 20));
     const topIdx = Math.max(0, Math.ceil(s / 20) - 1);
     for (let j = 0; j < 5; j++) {                    // j = 0 là ô dưới cùng
-      const c = document.getElementById('cell' + (4 - j));
+      const c = byId('cell' + (4 - j));
       const v = Math.max(0, Math.min(1, (s - j * 20) / 20));
       c.style.setProperty('--o', v.toFixed(2));
       c.classList.toggle('up', charging && s < 100 && j === fillIdx);
@@ -625,8 +805,8 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
 
   let lastTs = 0;
   function refreshChip() {
-    const chip = document.getElementById('chip');
-    const txt = document.getElementById('chip-t');
+    const chip = byId('chip');
+    const txt = byId('chip-t');
     chip.classList.remove('live', 'stale');
     if (!lastTs) { txt.textContent = 'Đang kết nối'; return; }
     const age = Date.now() / 1000 - lastTs;
@@ -637,7 +817,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
 
   const SK = ['PV', 'Load', 'Charge', 'Discharge', 'Import', 'Export'], SN = ['Mặt trời', 'Tiêu thụ', 'Sạc pin', 'Xả pin', 'Mua lưới', 'Bán lưới'];
   let hist = {}, tot = null;
-  const E = (id) => document.getElementById(id), p2 = (n) => String(n).padStart(2, '0');
+  const E = (id) => byId(id), p2 = (n) => String(n).padStart(2, '0');
   function sumPre(pre) { const o = [0, 0, 0, 0, 0, 0]; for (const k in hist) if (k.indexOf(pre) === 0) SK.forEach((m, i) => { o[i] += hist[k][m] || 0; }); return o; }
   function statRender() {
     const n = new Date(), y = '' + n.getFullYear(), m = p2(n.getMonth() + 1), td = hist[y + m + p2(n.getDate())];
@@ -674,7 +854,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       const gridIn = data.GridImport || 0, gridOut = data.GridExport || 0;
       const grid = gridIn - gridOut;
       const avail = pv - load;
-      const $ = (id) => document.getElementById(id);
+      const $ = (id) => byId(id);
 
       $('val-pv').textContent = pv + ' W';
       $('hero-pv').innerHTML = pv + '<span>W</span>';
