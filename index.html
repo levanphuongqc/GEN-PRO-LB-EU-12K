@@ -642,18 +642,18 @@ function pipRestoreDoc() {
   PIP.win = null; PIP.ph = null; PIP.hero = null;
   pipBtnState(false);
 }
-// Video + canvas được dựng sẵn khi mở trang: Safari iOS chỉ cho bật PiP ngay trong lúc chạm nút,
-// nên lúc bấm không được chờ (await) bất cứ thứ gì trước khi gọi PiP.
+// Video + canvas được dựng sẵn và vẽ liên tục: Safari chỉ cho bật PiP khi video đã có khung hình thật
+// (readyState>=2, có videoWidth), và chỉ cho bật ngay trong lúc chạm nút.
 function pipPrep() {
   if (PIP.v) return PIP.v;
   const cv = document.createElement('canvas');
   cv.width = 680; cv.height = 900;                  // tỷ lệ cố định 340:450 -> PiP thu nhỏ cả khung đúng tỷ lệ
   PIP.cv = cv;
   const v = document.createElement('video');
-  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
+  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.autoplay = true;
   v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.setAttribute('muted', '');
   v.disablePictureInPicture = false;
-  v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.02;pointer-events:none;z-index:-1';
+  v.style.cssText = 'position:fixed;right:0;bottom:0;width:80px;height:106px;opacity:.01;pointer-events:none;z-index:-1';
   document.body.appendChild(v);
   pipPaint();
   v.srcObject = cv.captureStream(10);
@@ -661,29 +661,42 @@ function pipPrep() {
   v.addEventListener('leavepictureinpicture', () => pipStopVideo());
   v.addEventListener('webkitpresentationmodechanged', () => { if (v.webkitPresentationMode !== 'picture-in-picture') pipStopVideo(); });
   PIP.v = v;
+  PIP.timer = setInterval(pipPaint, 500);          // vẽ liên tục để luồng video luôn có khung hình mới
   return v;
 }
 function pipOpenVideo() {
   const v = pipPrep();
+  const info = () => 'rs=' + v.readyState + ' w=' + v.videoWidth + ' tr=' + (v.srcObject ? v.srcObject.getVideoTracks().length : 0) +
+    ' wk=' + (v.webkitSupportsPresentationMode ? v.webkitSupportsPresentationMode('picture-in-picture') : 'n/a');
+  const fail = (e) => { pipStopVideo(); toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e) + ' [' + info() + ']'); };
+  let tried = false;
+  const go = () => {
+    if (tried) return; tried = true;
+    try {
+      if (v.webkitSetPresentationMode && v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture')) v.webkitSetPresentationMode('picture-in-picture');
+      else if (v.requestPictureInPicture) v.requestPictureInPicture().catch(fail);
+      else throw new Error('trình duyệt chưa hỗ trợ');
+    } catch (e) { fail(e); return; }
+    PIP.active = true; pipBtnState(true);
+    setTimeout(() => {
+      if (PIP.active && v.webkitPresentationMode !== 'picture-in-picture' && document.pictureInPictureElement !== v) fail(new Error('trình duyệt từ chối, hãy thử bấm lại'));
+    }, 2500);
+  };
   pipPaint();
-  const fail = (e) => { pipStopVideo(); toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e)); };
-  try {
-    if (v.paused) v.play().catch(() => {});
-    if (v.webkitSetPresentationMode && v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture')) v.webkitSetPresentationMode('picture-in-picture');
-    else if (v.requestPictureInPicture) v.requestPictureInPicture().catch(fail);
-    else throw new Error('trình duyệt chưa hỗ trợ');
-  } catch (e) { fail(e); return; }
-  PIP.active = true;
-  PIP.timer = setInterval(pipPaint, 500);
-  pipBtnState(true);
-  setTimeout(() => {
-    if (PIP.active && v.webkitPresentationMode !== 'picture-in-picture' && document.pictureInPictureElement !== v) fail(new Error('trình duyệt từ chối, hãy thử bấm lại'));
-  }, 2500);
+  if (v.paused) v.play().catch(() => {});
+  if (v.readyState >= 2 && v.videoWidth > 0) { go(); return; }
+  // video chưa có khung hình: chờ tối đa 2 giây rồi tự bật
+  toast('Đang chuẩn bị video...');
+  const t0 = Date.now();
+  const wait = setInterval(() => {
+    if (v.readyState >= 2 && v.videoWidth > 0) { clearInterval(wait); go(); }
+    else if (Date.now() - t0 > 2000) { clearInterval(wait); go(); }
+    else pipPaint();
+  }, 100);
 }
 function pipStopVideo() {
   if (!PIP.active) return;
   PIP.active = false;
-  clearInterval(PIP.timer);
   const v = PIP.v;
   try {
     if (document.pictureInPictureElement === v) document.exitPictureInPicture();
