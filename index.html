@@ -284,9 +284,9 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 
   <!-- THANH TAB CON CỦA CÀI ĐẶT (chỉ hiện khi đang ở Cài đặt) -->
   <div class="subnav" id="subnav" role="tablist" aria-label="Cài đặt" hidden>
-    <button type="button" id="sb6" role="tab" onclick="openTab(6)">Biến tần</button>
     <button type="button" id="sb2" role="tab" onclick="openTab(2)">Auto</button>
     <button type="button" id="sb3" role="tab" onclick="openTab(3)">Âm thanh</button>
+    <button type="button" id="sb6" role="tab" onclick="openTab(6)">Biến tần</button>
     <button type="button" id="sb4" role="tab" onclick="openTab(4)">Tài khoản</button>
   </div>
 
@@ -569,8 +569,8 @@ async function invApply() {
   st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
   btn.disabled = false;
 }
-const SET_TABS = [6, 2, 3, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
-  let lastSet = 6;
+const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
+  let lastSet = 2;
   function openTab(t) {
     if (t === 7) t = lastSet;
     const inSet = SET_TABS.indexOf(t) >= 0;
