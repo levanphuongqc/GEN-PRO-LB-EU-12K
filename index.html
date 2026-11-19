@@ -60,7 +60,7 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .flow .vl{font-size:16px;font-weight:700;fill:var(--hero-ink);font-variant-numeric:tabular-nums}
 .flow .st{font-size:11px;fill:var(--hero-muted)}
 .iv-txt{font-size:15px;line-height:1.3;text-align:right;white-space:normal;max-width:58%}
-.iv-val{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+.iv-val{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 .flow .tl{font-size:10px;fill:var(--hero-muted)}
 .flow .tv{font-size:13px;font-weight:700;fill:var(--hero-ink);font-variant-numeric:tabular-nums}
 .flow use{fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -76,6 +76,10 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .note{text-align:center;color:var(--muted);font-size:12px;margin:16px 0 0}
 
 /* panels */
+.subnav{display:flex;gap:4px;padding:4px;margin:0 0 12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow);border:1px solid var(--line)}
+.subnav[hidden]{display:none}
+.subnav button{flex:1;min-width:0;padding:9px 4px;border:0;border-radius:12px;background:none;color:var(--muted);font-size:clamp(12px,3.4vw,14px);font-weight:700;cursor:pointer;white-space:nowrap}
+.subnav button.active{background:var(--accent);color:var(--on-accent)}
 .panel{display:none}
 .panel.active{display:block}
 .group{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:6px 18px;margin-bottom:14px}
@@ -162,7 +166,10 @@ header p{font-size:clamp(11.5px,3.2vw,13.5px)}
 .hero-top b{font-size:clamp(28px,9vw,42px)}
 .hero-top b span{font-size:clamp(13px,3.8vw,18px)}
 .hero-top .sub b{font-size:clamp(17px,5.2vw,24px)}
-.sysinfo{position:absolute;left:14px;bottom:10px;font-size:11px;line-height:1.35;color:var(--hero-muted);font-variant-numeric:tabular-nums;pointer-events:none;text-align:left;white-space:nowrap}
+.sysbar{display:flex;justify-content:center;align-items:center;gap:clamp(8px,3vw,16px);margin:12px 0 0;font-size:clamp(10.5px,3vw,12px);color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;flex-wrap:nowrap}
+.sysbar span{padding:3px clamp(6px,2vw,10px);border-radius:99px;background:var(--surface);box-shadow:var(--shadow)}
+.sysbar+.note{margin-top:8px}
+.hero{padding-bottom:clamp(10px,3vw,14px)}
 .pvs{margin-top:6px;font-size:clamp(11px,3.1vw,12.5px);line-height:1.5;color:var(--hero-muted);font-variant-numeric:tabular-nums;white-space:nowrap}
 svg.flow{max-height:min(60vh,440px);margin-left:auto;margin-right:auto}
 .summary{gap:clamp(8px,2.6vw,12px)}
@@ -275,6 +282,14 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     <div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div>
   </header>
 
+  <!-- THANH TAB CON CỦA CÀI ĐẶT (chỉ hiện khi đang ở Cài đặt) -->
+  <div class="subnav" id="subnav" role="tablist" aria-label="Cài đặt" hidden>
+    <button type="button" id="sb6" role="tab" onclick="openTab(6)">Biến tần</button>
+    <button type="button" id="sb2" role="tab" onclick="openTab(2)">Auto</button>
+    <button type="button" id="sb3" role="tab" onclick="openTab(3)">Âm thanh</button>
+    <button type="button" id="sb4" role="tab" onclick="openTab(4)">Tài khoản</button>
+  </div>
+
   <!-- SƠ ĐỒ -->
   <section id="tab0" class="panel active">
     <div class="hero">
@@ -319,15 +334,16 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
         <text class="vl" x="286" y="224" text-anchor="middle" id="val-grid">-- W</text>
         <text class="st" x="286" y="241" text-anchor="middle" id="st-grid">--</text>
         <text class="st" x="286" y="256" text-anchor="middle" id="sv-grid">-- V · -- Hz</text>
+        <text class="st" x="286" y="271" text-anchor="middle" id="sv-imp">Mua -- kWh</text>
 
         <g transform="translate(138 262) scale(0.6667)"><image href="data:image/png;base64,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" width="96" height="96"/></g>
         <text class="nm" x="212" y="288" id="nm-load">Tiêu thụ</text>
         <text class="vl" x="212" y="306" id="val-load">-- W</text>
         <text class="st" x="212" y="322" id="sv-load">Hôm nay -- kWh</text>
       </svg>
-      <div class="sysinfo"><div id="sv-ram">RAM -- KB</div><div id="sv-psram">PSRAM -- MB</div><div id="sv-cpu">CPU --%</div></div>
     </div>
 
+    <div class="sysbar" aria-label="Thông số của mạch"><span id="sv-ram">RAM -- KB</span><span id="sv-psram">PSRAM -- MB</span><span id="sv-cpu">CPU --%</span></div>
     <p class="note">Dữ liệu đồng bộ trực tiếp từ Firebase</p>
   </section>
 
@@ -477,7 +493,7 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     </div>
     <div class="group"><h3>Thay đổi cài đặt</h3>
       <div class="field col"><label for="iv-in-wsoc">Battery Warning SOC (%)</label><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" oninput="invDirty.w=true"></div></div>
-      <div class="field col"><label for="iv-in-prio">Source Priority (Ưu tiên nguồn)</label><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option></select></div></div>
+      <div class="field col"><label for="iv-in-prio">Source Priority (Ưu tiên nguồn)</label><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option><option value="2">Grid &gt; Solar &gt; Battery (AC first)</option></select></div></div>
       <p class="sync" id="iv-hint"></p>
       <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
       <p class="sync" id="iv-status"></p>
@@ -503,11 +519,8 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
   <div class="bar-nav">
     <button type="button" id="btn0" class="tab-btn active" onclick="openTab(0)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.5"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>Sơ đồ</button>
     <button type="button" id="btn5" class="tab-btn" onclick="openTab(5)"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Thống kê</button>
-    <button type="button" id="btn6" class="tab-btn" onclick="openTab(6)"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="3"/><path d="M7 12h2.2l1.5-3.5 2.6 7 1.5-3.5H17"/></svg>Biến tần</button>
     <button type="button" id="btn1" class="tab-btn" onclick="openTab(1)"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Điều khiển</button>
-    <button type="button" id="btn2" class="tab-btn" onclick="openTab(2)"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Auto</button>
-    <button type="button" id="btn3" class="tab-btn" onclick="openTab(3)"><svg viewBox="0 0 24 24"><path d="M4 9.5v5h3.5l4.5 4v-13l-4.5 4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.2 6.5a8 8 0 0 1 0 11"/></svg>Âm thanh</button>
-    <button type="button" id="btn4" class="tab-btn" onclick="openTab(4)"><svg viewBox="0 0 24 24"><use href="#i-user"/></svg>Tài khoản</button>
+    <button type="button" id="btn7" class="tab-btn" onclick="openTab(7)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>Cài đặt</button>
   </div>
 </nav>
 <div id="toast" role="status" aria-live="polite"></div>
@@ -523,7 +536,7 @@ function invSync(d) {
   invCur.p = d.SetSrcPrio == null ? null : +d.SetSrcPrio;
   invCur.r = d.SetBatRecSoc == null ? null : +d.SetBatRecSoc;
   if (!invDirty.w && invCur.w != null) invEl('iv-in-wsoc').value = invCur.w;
-  if (!invDirty.p && invCur.p != null && invCur.p <= 1) invEl('iv-in-prio').value = invCur.p;
+  if (!invDirty.p && invCur.p != null && invCur.p <= 2) invEl('iv-in-prio').value = invCur.p;
   invEl('iv-hint').textContent = 'Cho phép 0–90%' + (invCur.r != null ? ', phải nhỏ hơn mức phục hồi ' + invCur.r + '%' : '') + '.';
   if (invWait && d.SetResId === invWait.id) { const w = invWait; invWait = null; w.done({ ok: !!d.SetResOk, msg: d.SetResMsg || '' }); }
 }
@@ -556,11 +569,17 @@ async function invApply() {
   st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
   btn.disabled = false;
 }
-function openTab(t) {
-    for (let i = 0; i < 7; i++) {
-      document.getElementById('tab' + i).classList.toggle('active', i === t);
-      document.getElementById('btn' + i).classList.toggle('active', i === t);
-    }
+const SET_TABS = [6, 2, 3, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
+  let lastSet = 6;
+  function openTab(t) {
+    if (t === 7) t = lastSet;
+    const inSet = SET_TABS.indexOf(t) >= 0;
+    if (inSet) lastSet = t;
+    for (let i = 0; i < 7; i++) document.getElementById('tab' + i).classList.toggle('active', i === t);
+    [0, 1, 5].forEach((i) => document.getElementById('btn' + i).classList.toggle('active', i === t));
+    document.getElementById('btn7').classList.toggle('active', inSet);
+    document.getElementById('subnav').hidden = !inSet;
+    SET_TABS.forEach((i) => document.getElementById('sb' + i).classList.toggle('active', i === t));
     window.scrollTo({ top: 0 });
   }
 
@@ -671,6 +690,7 @@ function openTab(t) {
       $('sv-dis').textContent = 'Xả ' + nf(data.DischargeDay, 1) + ' kWh';
       $('sv-grid').textContent = nf(data.GridVolt, 0) + ' V · ' + nf(data.GridHz, 2) + ' Hz';
       $('sv-load').textContent = 'Hôm nay ' + nf(data.LoadDay, 1) + ' kWh';
+      $('sv-imp').textContent = 'Mua hôm nay ' + nf(data.ImportDay, 1) + ' kWh';   // Etouser_day (input reg 37)
       $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
       try { invSync(data); } catch (e) {}
       $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';   // Battery Warning SOC (holding reg 164)
