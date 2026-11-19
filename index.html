@@ -582,7 +582,7 @@ async function invApply() {
 // ===== HÌNH TRONG HÌNH (tab Sơ đồ) =====
 // Máy tính (Chrome/Edge 116+): cửa sổ nổi thật, dữ liệu vẫn cập nhật trực tiếp.
 // Điện thoại/trình duyệt khác: vẽ sơ đồ lên canvas rồi bật PiP của video.
-const PIP = { win: null, ph: null, hero: null, video: null, cv: null, timer: 0 };
+const PIP = { win: null, ph: null, hero: null, v: null, cv: null, timer: 0, active: false };
 function byId(id) {
   return document.getElementById(id) || (PIP.win && !PIP.win.closed ? PIP.win.document.getElementById(id) : null);
 }
@@ -596,11 +596,12 @@ function pipBtnState(on) {
   const b = document.getElementById('pip-btn') || (PIP.win && PIP.win.document.getElementById('pip-btn'));
   if (b) b.classList.toggle('on', !!on);
 }
-async function togglePip() {
+function togglePip() {
   try {
     if (PIP.win) { PIP.win.close(); return; }
-    if (PIP.video) { pipStopVideo(); return; }
-    if (pipSupport() === 'doc') await pipOpenDoc(); else await pipOpenVideo();
+    if (PIP.active) { pipStopVideo(); return; }
+    if (pipSupport() === 'doc') { pipOpenDoc().catch((e) => toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e))); return; }
+    pipOpenVideo();
   } catch (e) { toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e)); }
 }
 async function pipOpenDoc() {
@@ -641,41 +642,53 @@ function pipRestoreDoc() {
   PIP.win = null; PIP.ph = null; PIP.hero = null;
   pipBtnState(false);
 }
-async function pipOpenVideo() {
+// Video + canvas được dựng sẵn khi mở trang: Safari iOS chỉ cho bật PiP ngay trong lúc chạm nút,
+// nên lúc bấm không được chờ (await) bất cứ thứ gì trước khi gọi PiP.
+function pipPrep() {
+  if (PIP.v) return PIP.v;
   const cv = document.createElement('canvas');
-  cv.width = 680; cv.height = 900;                  // tỷ lệ cố định 340:450 -> PiP thu nhỏ cả khung theo đúng tỷ lệ
+  cv.width = 680; cv.height = 900;                  // tỷ lệ cố định 340:450 -> PiP thu nhỏ cả khung đúng tỷ lệ
   PIP.cv = cv;
   const v = document.createElement('video');
-  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.autoplay = true;
+  v.muted = true; v.defaultMuted = true; v.playsInline = true; v.autoplay = true; v.loop = true;
   v.setAttribute('playsinline', ''); v.setAttribute('webkit-playsinline', ''); v.setAttribute('muted', '');
   v.disablePictureInPicture = false;
-  v.style.cssText = 'position:fixed;right:0;bottom:0;width:2px;height:2px;opacity:.02;pointer-events:none;z-index:-1';
+  v.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.02;pointer-events:none;z-index:-1';
   document.body.appendChild(v);
   pipPaint();
   v.srcObject = cv.captureStream(10);
-  await v.play();
-  if (v.readyState < 1) await new Promise((res) => { v.addEventListener('loadedmetadata', res, { once: true }); setTimeout(res, 1500); });
-  PIP.video = v;
-  PIP.timer = setInterval(pipPaint, 500);
-  v.addEventListener('leavepictureinpicture', pipStopVideo);
+  v.play().catch(() => {});
+  v.addEventListener('leavepictureinpicture', () => pipStopVideo());
   v.addEventListener('webkitpresentationmodechanged', () => { if (v.webkitPresentationMode !== 'picture-in-picture') pipStopVideo(); });
+  PIP.v = v;
+  return v;
+}
+function pipOpenVideo() {
+  const v = pipPrep();
+  pipPaint();
+  const fail = (e) => { pipStopVideo(); toast('Không bật được hình trong hình: ' + (e && e.message ? e.message : e)); };
   try {
-    if (v.requestPictureInPicture) await v.requestPictureInPicture();
-    else v.webkitSetPresentationMode('picture-in-picture');
-  } catch (e) {
-    if (v.webkitSetPresentationMode) v.webkitSetPresentationMode('picture-in-picture');   // iOS Safari
-    else throw e;
-  }
+    if (v.paused) v.play().catch(() => {});
+    if (v.webkitSetPresentationMode && v.webkitSupportsPresentationMode && v.webkitSupportsPresentationMode('picture-in-picture')) v.webkitSetPresentationMode('picture-in-picture');
+    else if (v.requestPictureInPicture) v.requestPictureInPicture().catch(fail);
+    else throw new Error('trình duyệt chưa hỗ trợ');
+  } catch (e) { fail(e); return; }
+  PIP.active = true;
+  PIP.timer = setInterval(pipPaint, 500);
   pipBtnState(true);
+  setTimeout(() => {
+    if (PIP.active && v.webkitPresentationMode !== 'picture-in-picture' && document.pictureInPictureElement !== v) fail(new Error('trình duyệt từ chối, hãy thử bấm lại'));
+  }, 2500);
 }
 function pipStopVideo() {
+  if (!PIP.active) return;
+  PIP.active = false;
   clearInterval(PIP.timer);
-  const v = PIP.video;
-  PIP.video = null; PIP.cv = null;
-  if (v) {
-    try { if (document.pictureInPictureElement === v) document.exitPictureInPicture(); } catch (e) {}
-    v.srcObject = null; v.remove();
-  }
+  const v = PIP.v;
+  try {
+    if (document.pictureInPictureElement === v) document.exitPictureInPicture();
+    else if (v && v.webkitPresentationMode === 'picture-in-picture') v.webkitSetPresentationMode('inline');
+  } catch (e) {}
   pipBtnState(false);
 }
 const pipImgs = new Map();
@@ -745,8 +758,10 @@ function pipPaint() {
   ctx.restore();
 }
 document.addEventListener('DOMContentLoaded', () => {
-  if (!pipSupport()) return;
+  const m = pipSupport();
+  if (!m) return;
   const b = document.getElementById('pip-btn'); if (b) b.hidden = false;
+  if (m === 'video') { try { pipPrep(); setTimeout(pipPaint, 1500); } catch (e) {} }
 });
 
 const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
