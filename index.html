@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <style>
 :root{
   --bg:#e9efe8; --surface:#ffffff; --surface2:#f3f7f2; --ink:#12302b; --muted:#6a7f7a; --line:#d5dfd9;
@@ -82,6 +83,10 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .subnav button.active{background:var(--accent);color:var(--on-accent)}
 .panel{display:none}
 .panel.active{display:block}
+[hidden]{display:none!important}
+.pm{display:flex;align-items:center;gap:8px;font-size:14px;margin:4px 0}.pm input{width:18px;height:18px;accent-color:var(--pv)}
+.um-row{border-top:1px solid var(--line);padding:12px 0}.um-row .um-n{font-weight:700}.um-row .um-e{color:var(--muted);font-size:13px;word-break:break-all}
+.um-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .group{background:var(--surface);border-radius:22px;box-shadow:var(--shadow);padding:6px 18px;margin-bottom:14px}
 .group>h3{margin:14px 0 2px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px}
 .group>h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c,var(--bat))}
@@ -273,7 +278,7 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     <div class="logo"><svg viewBox="0 0 24 24"><use href="#i-sun"/></svg></div>
     <h2 id="login-h">Đăng nhập</h2>
     <p class="sub">LuxPower GEN PRO-LB-EU 12K</p>
-    <label class="lf"><span>Tên người dùng</span><div class="txt"><input id="lg_user" name="username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required></div></label>
+    <label class="lf"><span>Số điện thoại</span><div class="txt"><input id="lg_user" name="username" type="tel" inputmode="tel" placeholder="VD: 0912345678" autocomplete="username" autocapitalize="none" spellcheck="false" required></div></label>
     <label class="lf"><span>Mật khẩu</span><div class="txt"><input id="lg_pass" name="password" type="password" autocomplete="current-password" required><button type="button" onclick="togglePw('lg_pass',this)">Hiện</button></div></label>
     <label class="remember"><input type="checkbox" id="lg_remember" checked> Ghi nhớ đăng nhập trên thiết bị này</label>
     <p class="err" id="lg_err" role="alert"></p>
@@ -468,13 +473,10 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
     <div class="group">
       <h3 style="--c:var(--grid)">Tài khoản</h3>
       <p class="hint">Đang đăng nhập: <b id="acc_cur">--</b></p>
-      <div class="hint-box" id="acc_default" hidden>Bạn đang dùng tài khoản mặc định (admin / admin). Hãy đổi tên và mật khẩu ngay.</div>
+      <p class="hint">Quyền: <b id="acc_role">--</b></p>
     </div>
     <form class="group" id="acc-form" onsubmit="return changeAccount(event)" autocomplete="off">
-      <h3 style="--c:var(--pv)">Đổi tên và mật khẩu</h3>
-      <p class="hint">Để trống mục nào bạn không muốn đổi.</p>
-      <label class="lab" for="ac_user">Tên người dùng mới</label>
-      <div class="txt"><input id="ac_user" type="text" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <h3 style="--c:var(--pv)">Đổi mật khẩu</h3>
       <label class="lab" for="ac_new">Mật khẩu mới (tối thiểu 6 ký tự)</label>
       <div class="txt"><input id="ac_new" type="password" autocomplete="new-password"><button type="button" onclick="togglePw('ac_new',this)">Hiện</button></div>
       <label class="lab" for="ac_new2">Nhập lại mật khẩu mới</label>
@@ -482,7 +484,28 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       <label class="lab" for="ac_cur">Mật khẩu hiện tại (bắt buộc để xác nhận)</label>
       <div class="txt"><input id="ac_cur" type="password" autocomplete="current-password" required><button type="button" onclick="togglePw('ac_cur',this)">Hiện</button></div>
       <p class="err" id="ac_err" role="alert" style="color:var(--load)"></p>
-      <button type="submit" class="btn-save" id="ac_btn" style="margin-bottom:14px">Lưu thay đổi</button>
+      <button type="submit" class="btn-save" id="ac_btn" style="margin-bottom:14px">Lưu mật khẩu mới</button>
+    </form>
+    <div class="group" id="um-group" hidden>
+      <h3 style="--c:var(--pv)">Quản lý người dùng</h3>
+      <p class="hint">Quản trị viên xem được tất cả. Người dùng thường chỉ thấy các tab được tick. Thay đổi quyền có hiệu lực ngay (máy của người đó tự tải lại). Người quên mật khẩu: xoá tài khoản đó trong Firebase Console > Authentication rồi tạo lại ở đây.</p>
+      <div id="um-list"></div>
+    </div>
+    <form class="group" id="um-add" hidden onsubmit="return addUser(event)" autocomplete="off">
+      <h3 style="--c:var(--bat)">Thêm tài khoản</h3>
+      <label class="lab" for="nu_name">Tên hiển thị</label>
+      <div class="txt"><input id="nu_name" type="text" autocomplete="off"></div>
+      <label class="lab" for="nu_email">Số điện thoại đăng nhập</label>
+      <div class="txt"><input id="nu_email" type="tel" inputmode="tel" placeholder="VD: 0912345678" autocomplete="off" autocapitalize="none" spellcheck="false"></div>
+      <p class="hint" style="margin:4px 0 0">Tài khoản của mạch: nhập mã tự đặt gồm chữ không dấu và số (VD: mach1), 3-20 ký tự.</p>
+      <label class="lab" for="nu_pw">Mật khẩu ban đầu (tối thiểu 6 ký tự)</label>
+      <div class="txt"><input id="nu_pw" type="password" autocomplete="new-password"><button type="button" onclick="togglePw('nu_pw',this)">Hiện</button></div>
+      <label class="lab" for="nu_role">Loại tài khoản</label>
+      <div class="sel"><select id="nu_role"><option value="user">Người dùng (xem theo tab được tick)</option><option value="admin">Quản trị viên (xem tất cả)</option><option value="device">Tài khoản của mạch (không đăng nhập web)</option></select></div>
+      <label class="lab">Được xem các tab</label>
+      <div id="nu_tabs"></div>
+      <p class="err" id="nu_err" role="alert" style="color:var(--load)"></p>
+      <button type="submit" class="btn-save" id="nu_btn" style="margin-bottom:14px">Tạo tài khoản</button>
     </form>
     <div class="group" id="fw-group">
       <h3 style="--c:var(--bat)">Cập nhật firmware</h3>
@@ -492,6 +515,11 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       <p class="hint">Hoặc cập nhật từ xa (từ mọi nơi): mạch tự tải bản mới nhất từ GitHub Releases theo link đã cài trên mạch, nếu có bản mới sẽ nạp và khởi động lại. Giới hạn 1 lần / 10 phút.</p>
       <button type="button" class="btn-test" id="btn-ota" onclick="otaRemote()" style="margin:6px 0 4px">Cập nhật từ GitHub</button>
       <p class="hint">Trạng thái: <b id="fw-ota">--</b></p>
+    </div>
+    <div class="group" id="rs-group">
+      <h3 style="--c:var(--load)">Khởi động lại mạch</h3>
+      <p class="hint">Chỉ cần khi mạch bị treo. Đổi cài đặt thì không cần khởi động lại. Lệnh gửi đến tất cả mạch đang dùng chung dữ liệu này; mạch sẽ trực tuyến lại sau khoảng 20–30 giây.</p>
+      <button type="button" class="btn-test" id="btn-restart" onclick="restartBoard()" style="margin:6px 0 4px">Khởi động lại mạch</button>
     </div>
     <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
   </section>
@@ -786,6 +814,8 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
   let lastSet = 2;
   function openTab(t) {
     if (t === 7) t = lastSet;
+    const NEED = { 0: 'sodo', 5: 'thongke', 1: 'dieukhien', 2: 'auto', 3: 'amthanh', 6: 'bientan' };
+    if (NEED[t] && !can(NEED[t])) return;
     const inSet = SET_TABS.indexOf(t) >= 0;
     if (inSet) lastSet = t;
     for (let i = 0; i < 7; i++) document.getElementById('tab' + i).classList.toggle('active', i === t);
@@ -872,14 +902,20 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     E('st-sum').textContent = SN[mi] + ' ' + (byDay ? 'tháng ' + M + '/' + Y : 'năm ' + Y) + ': ' + vals.reduce((a, b) => a + b, 0).toFixed(1) + ' kWh';
   }
 
+  // Chỉ nghe dữ liệu mà tài khoản được phép xem (Rules của Firebase cũng chặn ở phía máy chủ)
+  function onIf(needs, path, cb) {
+    if (!needs.some(can)) return;
+    database.ref(path).on('value', cb, (e) => console.warn('Không đọc được ' + path + ': ' + (e && e.code)));
+  }
+
   let started = false;
   function startApp() {
     if (started) return;
     started = true;
-    database.ref('/History').on('value', (sn) => { hist = sn.val() || {}; statRender(); });
-    database.ref('/Totals').on('value', (sn) => { tot = sn.val(); statRender(); });
+    onIf(['thongke'], '/History', (sn) => { hist = sn.val() || {}; statRender(); });
+    onIf(['thongke'], '/Totals', (sn) => { tot = sn.val(); statRender(); });
     // Dữ liệu Inverter
-    database.ref('/Inverter').on('value', (snapshot) => {
+    onIf(['sodo', 'bientan', 'hethong'], '/Inverter', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
       const pv = data.PV || 0, load = data.Load || 0, soc = data.Battery || 0;
@@ -938,7 +974,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     });
 
     // Trạng thái công tắc
-    database.ref('/Controls').on('value', (snapshot) => {
+    onIf(['dieukhien'], '/Controls', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
       ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
@@ -951,10 +987,11 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     });
 
     // Cấu hình Auto
-    database.ref('/Config').on('value', (snapshot) => {
+    onIf(['auto', 'amthanh'], '/Config', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
-      const set = (id, v) => { if (v !== undefined) document.getElementById(id).value = v; };
+      const ae = document.activeElement;   // ô đang gõ dở thì không ghi đè
+      const set = (id, v) => { const el = document.getElementById(id); if (v !== undefined && el !== ae) el.value = v; };
       set('auto_on_h', data.onH); set('auto_off_h', data.offH);
       set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
       set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
@@ -1013,7 +1050,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     const btn = document.getElementById('btn-save');
     btn.disabled = true; btn.textContent = 'Đang lưu...';
     database.ref('/Config').update(config)
-      .then(() => toast('Đã lưu cài đặt Auto'))
+      .then(() => toast('Cài đặt đã thành công'))
       .catch(() => toast('Lưu thất bại. Thử lại sau.'))
       .finally(() => { btn.disabled = false; btn.textContent = 'Lưu cài đặt Auto'; });
   }
@@ -1048,7 +1085,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     const btn = document.getElementById('btn-save-snd');
     btn.disabled = true; btn.textContent = 'Đang lưu...';
     database.ref('/Config').update(cfg)
-      .then(() => toast('Đã lưu cài đặt âm thanh'))
+      .then(() => toast('Cài đặt đã thành công'))
       .catch(() => toast('Lưu thất bại. Thử lại sau.'))
       .finally(() => { btn.disabled = false; btn.textContent = 'Lưu cài đặt âm thanh'; });
   }
@@ -1064,6 +1101,17 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       .finally(() => { setTimeout(() => { btn.disabled = false; }, 3000); });
   }
 
+  // Khởi động lại mạch: ghi mốc thời gian vào /Controls/RestartReq, mạch đang nghe luồng /Controls nên nhận gần như ngay
+  function restartBoard() {
+    if (!confirm('Khởi động lại mạch? Mạch sẽ ngừng hoạt động khoảng 20–30 giây.')) return;
+    const btn = document.getElementById('btn-restart');
+    btn.disabled = true;
+    database.ref('/Controls/RestartReq').set(Date.now())
+      .then(() => toast('Đã gửi lệnh khởi động lại. Mạch sẽ trực tuyến lại sau ít phút.'))
+      .catch(() => toast('Không gửi được lệnh. Kiểm tra kết nối.'))
+      .finally(() => { setTimeout(() => { btn.disabled = false; }, 30000); });
+  }
+
   // Phát thử: ghi mốc thời gian vào /Controls/SndTest, mạch đang nghe luồng /Controls nên phát gần như ngay
   function sndTest() {
     const btn = document.getElementById('btn-sndtest');
@@ -1074,129 +1122,225 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       .finally(() => { setTimeout(() => { btn.disabled = false; }, 1500); });
   }
 
-  // ===== ĐĂNG NHẬP / TÀI KHOẢN =====
-  // Thông tin đăng nhập lưu ở /Auth trong Firebase: { user, salt, hash } (mật khẩu được băm PBKDF2, không lưu dạng chữ thường).
-  // Chưa có /Auth thì dùng tài khoản mặc định admin / admin.
-  const AUTH_PATH = '/Auth';
-  const SESSION_KEY = 'lux_session';
-  const enc = new TextEncoder();
-  let currentUser = '', usingDefault = false, fails = 0, lockUntil = 0;
+  // ===== ĐĂNG NHẬP / PHÂN QUYỀN (Firebase Authentication) =====
+  // Mỗi người một tài khoản email + mật khẩu. Quyền lưu ở /Users/<uid> = { name, email, role: admin|user|device, tabs: {sodo, thongke, ...} }.
+  // Admin xem tất cả. Rules của Firebase kiểm tra lại quyền ở máy chủ, nên ẩn tab không phải là cách bảo vệ duy nhất.
+  const PERMS = [['sodo', 'Sơ đồ'], ['thongke', 'Thống kê'], ['dieukhien', 'Điều khiển'], ['auto', 'Cài đặt Auto'],
+                 ['amthanh', 'Cài đặt Âm thanh'], ['bientan', 'Cài đặt Biến tần'], ['hethong', 'Firmware và Khởi động lại mạch']];
+  const auth = firebase.auth();
+  let me = null, fails = 0, lockUntil = 0, meSig = null, umStarted = false, usersCache = {};
   const $id = (id) => document.getElementById(id);
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // Đăng nhập bằng số điện thoại: Firebase Authentication cần "email" nên số điện thoại được đổi thành email nội bộ
+  // (VD 0912345678 -> 0912345678@luxpower.vn). Không gửi SMS hay thư nào. Nhập email thật (có @) vẫn dùng được.
+  const PHONE_DOMAIN = '@luxpower.vn';
+  function toAuthEmail(raw) {
+    let s = String(raw || '').trim().toLowerCase();
+    if (s.indexOf('@') >= 0) return s;
+    s = s.replace(/[\s.\-()]/g, '');
+    if (s.indexOf('+84') === 0) s = '0' + s.slice(3);
+    else if (/^84\d{9}$/.test(s)) s = '0' + s.slice(2);
+    return s + PHONE_DOMAIN;
+  }
+  function loginLabel(email) { return String(email || '').endsWith(PHONE_DOMAIN) ? String(email).slice(0, -PHONE_DOMAIN.length) : String(email || ''); }
+  function isPhoneAcc(email) { return String(email || '').endsWith(PHONE_DOMAIN); }
+  function can(p) { return !!me && (me.role === 'admin' || (me.tabs && me.tabs[p] === true)); }
 
-  function hex(buf) { return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join(''); }
-  function newSalt() { return hex(crypto.getRandomValues(new Uint8Array(16))); }
-  async function hashPw(pw, salt) {
-    const key = await crypto.subtle.importKey('raw', enc.encode(pw), 'PBKDF2', false, ['deriveBits']);
-    const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', hash: 'SHA-256', salt: enc.encode(salt), iterations: 100000 }, key, 256);
-    return hex(bits);
-  }
-  async function getAuth() { return (await database.ref(AUTH_PATH).once('value')).val(); }
-  async function verify(user, pw) {
-    const rec = await getAuth();
-    if (!rec) return { ok: user.trim().toLowerCase() === 'admin' && pw === 'admin', rec: null };
-    const h = await hashPw(pw, rec.salt);
-    return { ok: user.trim().toLowerCase() === String(rec.user).toLowerCase() && h === rec.hash, rec };
-  }
-  function saveSession(user, token, remember) {
-    try {
-      localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY);
-      (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify({ u: user, t: token }));
-    } catch (e) {}
-  }
-  function readSession() {
-    try { return JSON.parse(localStorage.getItem(SESSION_KEY) || sessionStorage.getItem(SESSION_KEY)); } catch (e) { return null; }
-  }
-  function enter(user, isDefault) {
-    currentUser = user; usingDefault = isDefault;
-    $id('acc_cur').textContent = user;
-    $id('acc_default').hidden = !isDefault;
-    document.body.classList.remove('locked');
-    startApp();
-  }
   function togglePw(id, btn) {
     const el = $id(id);
     const show = el.type === 'password';
     el.type = show ? 'text' : 'password';
     btn.textContent = show ? 'Ẩn' : 'Hiện';
   }
+  function authMsg(e) {
+    const c = e && e.code;
+    if (c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-credential' || c === 'auth/invalid-login-credentials') return 'Sai số điện thoại hoặc mật khẩu.';
+    if (c === 'auth/invalid-email') return 'Số điện thoại không hợp lệ.';
+    if (c === 'auth/user-disabled') return 'Tài khoản đã bị vô hiệu hoá.';
+    if (c === 'auth/too-many-requests') return 'Thử quá nhiều lần. Hãy đợi vài phút rồi thử lại.';
+    if (c === 'auth/network-request-failed') return 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+    if (c === 'auth/email-already-in-use') return 'Số điện thoại này đã có tài khoản.';
+    if (c === 'auth/weak-password') return 'Mật khẩu quá yếu (tối thiểu 6 ký tự).';
+    return 'Có lỗi xảy ra (' + (c || 'không rõ') + ').';
+  }
 
   async function doLogin(e) {
     e.preventDefault();
     const err = $id('lg_err'), btn = $id('lg_btn');
     err.textContent = '';
-    if (!window.crypto || !crypto.subtle) { err.textContent = 'Trình duyệt không hỗ trợ mã hoá. Hãy mở trang bằng HTTPS.'; return false; }
     const wait = Math.ceil((lockUntil - Date.now()) / 1000);
     if (wait > 0) { err.textContent = 'Sai quá nhiều lần. Thử lại sau ' + wait + ' giây.'; return false; }
     btn.disabled = true; btn.textContent = 'Đang kiểm tra...';
     try {
-      const user = $id('lg_user').value, pw = $id('lg_pass').value;
-      const r = await verify(user, pw);
-      if (r.ok) {
-        fails = 0;
-        saveSession(r.rec ? r.rec.user : 'admin', r.rec ? r.rec.hash : 'default', $id('lg_remember').checked);
-        $id('lg_pass').value = '';
-        enter(r.rec ? r.rec.user : 'admin', !r.rec);
-      } else {
-        if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; }
-        err.textContent = 'Sai tên người dùng hoặc mật khẩu.';
-      }
+      const P = firebase.auth.Auth.Persistence;
+      await auth.setPersistence($id('lg_remember').checked ? P.LOCAL : P.SESSION);
+      await auth.signInWithEmailAndPassword(toAuthEmail($id('lg_user').value), $id('lg_pass').value);
+      fails = 0;
+      $id('lg_pass').value = '';
     } catch (ex) {
-      err.textContent = 'Không kết nối được máy chủ. Kiểm tra mạng rồi thử lại.';
+      if (++fails >= 5) { lockUntil = Date.now() + 30000; fails = 0; }
+      err.textContent = authMsg(ex);
     } finally {
       btn.disabled = false; btn.textContent = 'Đăng nhập';
     }
     return false;
   }
 
-  async function restoreSession() {
-    const s = readSession();
-    if (!s) return;
+  // Đăng nhập (kể cả tự khôi phục phiên) hoặc đăng xuất đều đi qua đây
+  auth.onAuthStateChanged(async (u) => {
+    if (!u) { me = null; document.body.classList.add('locked'); return; }
     try {
-      const rec = await getAuth();
-      if (s.t === (rec ? rec.hash : 'default')) enter(rec ? rec.user : 'admin', !rec);
-      else { try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch (e) {} }
-    } catch (e) {}
+      const rec = (await database.ref('/Users/' + u.uid).once('value')).val();
+      const hasTab = rec && rec.tabs && Object.keys(rec.tabs).some((k) => rec.tabs[k] === true);
+      let why = '';
+      if (!rec) why = 'Tài khoản chưa được cấp quyền. Hãy liên hệ quản trị viên.';
+      else if (rec.role === 'device') why = 'Đây là tài khoản của mạch, không dùng để đăng nhập web.';
+      else if (rec.role !== 'admin' && !hasTab) why = 'Tài khoản chưa được cấp quyền xem tab nào.';
+      if (why) { await auth.signOut(); $id('lg_err').textContent = why; return; }
+      me = { uid: u.uid, email: u.email, name: rec.name || u.email, role: rec.role === 'admin' ? 'admin' : 'user', tabs: rec.tabs || {} };
+      enter();
+    } catch (ex) {
+      try { await auth.signOut(); } catch (e2) {}
+      $id('lg_err').textContent = 'Không đọc được quyền của tài khoản. Hãy liên hệ quản trị viên.';
+    }
+  });
+
+  function enter() {
+    $id('acc_cur').textContent = me.name + ' (' + loginLabel(me.email) + ')';
+    $id('acc_role').textContent = me.role === 'admin' ? 'Quản trị viên (xem tất cả)' : 'Người dùng';
+    document.body.classList.remove('locked');
+    applyPerms();
+    startApp();
+    if (me.role === 'admin') startUserAdmin();
+    // Quyền đổi trong lúc đang dùng -> tải lại để áp dụng ngay
+    meSig = null;
+    database.ref('/Users/' + me.uid).on('value', (sn) => {
+      const v = sn.val() || {};
+      const sig = JSON.stringify([v.role, v.tabs]);
+      if (meSig !== null && sig !== meSig) { toast('Quyền của bạn vừa thay đổi, đang tải lại...'); setTimeout(() => location.reload(), 1200); }
+      meSig = sig;
+    });
+  }
+
+  function applyPerms() {
+    const show = (id, ok) => { const e = $id(id); if (e) e.hidden = !ok; };
+    show('btn0', can('sodo')); show('btn5', can('thongke')); show('btn1', can('dieukhien'));
+    show('sb2', can('auto')); show('sb3', can('amthanh')); show('sb6', can('bientan'));
+    show('fw-group', can('hethong')); show('rs-group', can('hethong'));
+    show('um-group', me.role === 'admin'); show('um-add', me.role === 'admin');
+    const firstSet = [[2, 'auto'], [3, 'amthanh'], [6, 'bientan']].find((x) => can(x[1]));
+    lastSet = firstSet ? firstSet[0] : 4;
+    const first = [[0, 'sodo'], [5, 'thongke'], [1, 'dieukhien']].find((x) => can(x[1]));
+    openTab(first ? first[0] : 7);
   }
 
   function logout() {
-    try { localStorage.removeItem(SESSION_KEY); sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
-    location.reload();
+    auth.signOut().then(() => location.reload(), () => location.reload());
   }
 
   async function changeAccount(e) {
     e.preventDefault();
     const err = $id('ac_err'), btn = $id('ac_btn');
     err.textContent = '';
-    const newU = $id('ac_user').value.trim();
     const newP = $id('ac_new').value, newP2 = $id('ac_new2').value, cur = $id('ac_cur').value;
-    if (!newU && !newP) { err.textContent = 'Hãy nhập tên mới hoặc mật khẩu mới.'; return false; }
-    if (newU && newU.length < 3) { err.textContent = 'Tên người dùng tối thiểu 3 ký tự.'; return false; }
-    if (newU && /\s/.test(newU)) { err.textContent = 'Tên người dùng không được chứa khoảng trắng.'; return false; }
-    if (newP && newP.length < 6) { err.textContent = 'Mật khẩu mới tối thiểu 6 ký tự.'; return false; }
-    if (newP && newP !== newP2) { err.textContent = 'Hai lần nhập mật khẩu mới không khớp.'; return false; }
+    if (newP.length < 6) { err.textContent = 'Mật khẩu mới tối thiểu 6 ký tự.'; return false; }
+    if (newP !== newP2) { err.textContent = 'Hai lần nhập mật khẩu mới không khớp.'; return false; }
     btn.disabled = true; btn.textContent = 'Đang lưu...';
     try {
-      const r = await verify(currentUser, cur);
-      if (!r.ok) { err.textContent = 'Mật khẩu hiện tại không đúng.'; return false; }
-      const user = newU || currentUser, pw = newP || cur;
-      const salt = newSalt(), hash = await hashPw(pw, salt);
-      await database.ref(AUTH_PATH).set({ user: user, salt: salt, hash: hash, updated: Date.now() });
-      const remember = !!localStorage.getItem(SESSION_KEY);
-      saveSession(user, hash, remember);
-      currentUser = user; usingDefault = false;
-      $id('acc_cur').textContent = user;
-      $id('acc_default').hidden = true;
-      ['ac_user', 'ac_new', 'ac_new2', 'ac_cur'].forEach((id) => { $id(id).value = ''; });
-      toast('Đã cập nhật tài khoản');
+      const u = auth.currentUser;
+      await u.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(u.email, cur));
+      await u.updatePassword(newP);
+      ['ac_new', 'ac_new2', 'ac_cur'].forEach((id) => { $id(id).value = ''; });
+      toast('Đã đổi mật khẩu');
     } catch (ex) {
-      err.textContent = 'Lưu thất bại. Kiểm tra kết nối rồi thử lại.';
+      err.textContent = (ex && (ex.code === 'auth/wrong-password' || ex.code === 'auth/invalid-credential')) ? 'Mật khẩu hiện tại không đúng.' : authMsg(ex);
     } finally {
-      btn.disabled = false; btn.textContent = 'Lưu thay đổi';
+      btn.disabled = false; btn.textContent = 'Lưu mật khẩu mới';
     }
     return false;
   }
 
-  restoreSession();
+  // ===== QUẢN LÝ NGƯỜI DÙNG (chỉ quản trị viên) =====
+  function permBoxes(prefix, tabs) {
+    return PERMS.map((p) => '<label class="pm"><input type="checkbox" id="' + prefix + p[0] + '"' + (tabs && tabs[p[0]] === true ? ' checked' : '') + '> ' + esc(p[1]) + '</label>').join('');
+  }
+  function readBoxes(prefix) {
+    const t = {};
+    PERMS.forEach((p) => { t[p[0]] = $id(prefix + p[0]).checked; });
+    return t;
+  }
+  function startUserAdmin() {
+    if (umStarted) return;
+    umStarted = true;
+    $id('nu_tabs').innerHTML = permBoxes('nu_t_', { sodo: true, thongke: true });
+    database.ref('/Users').on('value', (sn) => { usersCache = sn.val() || {}; renderUsers(); },
+      () => toast('Không đọc được danh sách người dùng'));
+  }
+  function renderUsers() {
+    const box = $id('um-list');
+    if (box.contains(document.activeElement) && document.activeElement !== box) return;   // đang sửa dở thì không vẽ lại
+    const ids = Object.keys(usersCache).sort((a, b) => String(usersCache[a].name || usersCache[a].email).localeCompare(String(usersCache[b].name || usersCache[b].email)));
+    if (!ids.length) { box.innerHTML = '<p class="hint">Chưa có người dùng nào.</p>'; return; }
+    box.innerHTML = ids.map((uid) => {
+      const u = usersCache[uid] || {}, role = u.role === 'admin' ? 'admin' : (u.role === 'device' ? 'device' : 'user');
+      return '<div class="um-row"><div class="um-n">' + esc(u.name || '(chưa đặt tên)') + (uid === me.uid ? ' (bạn)' : '') + '</div><div class="um-e">' + esc(loginLabel(u.email) || uid) + '</div>' +
+        '<label class="lab" for="ur_' + uid + '">Loại tài khoản</label><div class="sel"><select id="ur_' + uid + '">' +
+        '<option value="user"' + (role === 'user' ? ' selected' : '') + '>Người dùng</option>' +
+        '<option value="admin"' + (role === 'admin' ? ' selected' : '') + '>Quản trị viên (xem tất cả)</option>' +
+        '<option value="device"' + (role === 'device' ? ' selected' : '') + '>Tài khoản của mạch</option></select></div>' +
+        '<label class="lab">Được xem các tab (quản trị viên luôn xem tất cả)</label>' + permBoxes('ut_' + uid + '_', u.tabs) +
+        '<div class="um-btns"><button type="button" class="btn-test" onclick="saveUser(\'' + uid + '\')">Lưu quyền</button>' +
+        (isPhoneAcc(u.email) ? '' : '<button type="button" class="btn-test" onclick="resetPw(\'' + uid + '\')">Gửi mail đặt lại mật khẩu</button>') +
+        '<button type="button" class="btn-test" onclick="delUser(\'' + uid + '\')" style="color:var(--load)">Xoá quyền</button></div></div>';
+    }).join('');
+  }
+  function saveUser(uid) {
+    const role = $id('ur_' + uid).value;
+    if (uid === me.uid && role !== 'admin') { toast('Không thể tự bỏ quyền quản trị của chính mình'); return; }
+    database.ref('/Users/' + uid).update({ role: role, tabs: readBoxes('ut_' + uid + '_') })
+      .then(() => toast('Đã lưu quyền'))
+      .catch(() => toast('Lưu thất bại. Kiểm tra kết nối.'));
+  }
+  function resetPw(uid) {
+    const u = usersCache[uid];
+    if (!u || !u.email) return;
+    auth.sendPasswordResetEmail(u.email).then(() => toast('Đã gửi mail đặt lại mật khẩu tới ' + u.email)).catch((ex) => toast(authMsg(ex)));
+  }
+  function delUser(uid) {
+    if (uid === me.uid) { toast('Không thể xoá quyền của chính mình'); return; }
+    const u = usersCache[uid] || {};
+    if (!confirm('Xoá quyền của ' + (loginLabel(u.email) || uid) + '? Người này sẽ không đăng nhập vào web được nữa. (Muốn xoá hẳn tài khoản, vào Firebase Console > Authentication.)')) return;
+    database.ref('/Users/' + uid).remove().then(() => toast('Đã xoá quyền')).catch(() => toast('Xoá thất bại'));
+  }
+  async function addUser(e) {
+    e.preventDefault();
+    const err = $id('nu_err'), btn = $id('nu_btn');
+    err.textContent = '';
+    const name = $id('nu_name').value.trim(), rawId = $id('nu_email').value.trim(), email = toAuthEmail(rawId), pw = $id('nu_pw').value, role = $id('nu_role').value;
+    if (!name) { err.textContent = 'Hãy nhập tên hiển thị.'; return false; }
+    {
+      const idp = loginLabel(email);
+      const okId = rawId.indexOf('@') >= 0 ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)
+                 : (/^0\d{9,10}$/.test(idp) || (role === 'device' && /^[a-z0-9]{3,20}$/.test(idp)));
+      if (!okId) { err.textContent = role === 'device' ? 'Nhập số điện thoại hoặc mã gồm chữ không dấu và số (3-20 ký tự).' : 'Số điện thoại không hợp lệ (VD: 0912345678).'; return false; }
+    }
+    if (pw.length < 6) { err.textContent = 'Mật khẩu tối thiểu 6 ký tự.'; return false; }
+    btn.disabled = true; btn.textContent = 'Đang tạo...';
+    try {
+      // Tạo bằng một "app phụ" để quản trị viên không bị đăng xuất
+      const sec = firebase.apps.find((a) => a.name === 'sec') || firebase.initializeApp(firebaseConfig, 'sec');
+      const cred = await sec.auth().createUserWithEmailAndPassword(email, pw);
+      await sec.auth().signOut();
+      await database.ref('/Users/' + cred.user.uid).set({ name: name, email: email, phone: loginLabel(email), role: role, tabs: readBoxes('nu_t_') });
+      ['nu_name', 'nu_email', 'nu_pw'].forEach((id) => { $id(id).value = ''; });
+      toast('Đã tạo tài khoản ' + loginLabel(email));
+    } catch (ex) {
+      err.textContent = authMsg(ex);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Tạo tài khoản';
+    }
+    return false;
+  }
 </script>
 </body>
 </html>
