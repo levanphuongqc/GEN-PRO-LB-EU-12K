@@ -233,13 +233,15 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 .flow .fl.on .chev{animation:chev 1.4s ease-in-out infinite}
 @keyframes chev{0%,100%{opacity:.14}28%,52%{opacity:1}}
 .flow .cell{opacity:var(--o,0);transition:opacity .7s ease}
+.flow .cw{fill:#fff}
+.flow .cg{fill:#50aa76}
 .flow .cell .u-m,.flow .cell .u-l{display:none}
 .flow .bat.mid .u-n,.flow .bat.low .u-n{display:none}
 .flow .bat.mid .u-m{display:inline}
 .flow .bat.low .u-l{display:inline}
 .flow .cell.up{animation:cellup 1.4s ease-in-out infinite}
 .flow .cell.down{animation:celldown 1.4s ease-in-out infinite}
-@keyframes cellup{0%,100%{opacity:var(--o,0)}50%{opacity:1}}
+@keyframes cellup{0%,100%{opacity:0}45%,60%{opacity:1}}
 @keyframes celldown{0%,100%{opacity:var(--o,0)}50%{opacity:calc(var(--o,0)*.3)}}
 @media (prefers-reduced-motion:reduce){.flow .fl.on .chev{opacity:.9!important}}
 
@@ -260,6 +262,25 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 .pip-btn.on{background:var(--pv);color:#1b1300}
 .pip-ph{background:var(--hero);color:var(--hero-muted);border-radius:clamp(20px,6vw,28px);padding:28px 16px;text-align:center;font-size:13.5px}
 .pip-ph button{margin-top:12px;border:0;border-radius:12px;padding:9px 16px;background:var(--pv);color:#1b1300;font-weight:700;cursor:pointer}
+
+/* ===== Sóng WiFi + loa web ===== */
+.hr{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.hr2{display:flex;align-items:center;gap:6px}
+button.chip{border:0;cursor:pointer;color:var(--ink);font-family:inherit}
+.wf{width:16px;height:12px;flex:none}
+.wf rect{fill:var(--line);transition:fill .3s}
+.wf rect.on{fill:var(--bat)}
+#wifi.md .wf rect.on{fill:var(--pv)}
+#wifi.wk .wf rect.on{fill:var(--load)}
+#wifi.no{color:var(--muted)}
+#snd-btn{padding-left:9px;padding-right:9px}
+#snd-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#snd-btn .s-on{display:none}
+#snd-btn.on{background:var(--bat);color:#fff}
+#snd-btn.on .s-on{display:inline}
+#snd-btn.on .s-off{display:none}
+#snd-vol{display:none;width:72px;height:24px;margin:0;accent-color:var(--bat)}
+#snd-btn.on~#snd-vol{display:block}
 </style>
 </head>
 <body class="locked">
@@ -292,7 +313,9 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
       <h1>Điện mặt trời điều khiển bình nước nóng</h1>
       <p>LuxPower GEN PRO-LB-EU 12K</p>
     </div>
-    <div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div>
+    <div class="hr"><div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div>
+<div class="hr2"><div class="chip no" id="wifi" title="Sóng WiFi của mạch"><svg class="wf" viewBox="0 0 16 12" aria-hidden="true"><rect x="0" y="9" width="3" height="3" rx=".6"/><rect x="4" y="6" width="3" height="6" rx=".6"/><rect x="8" y="3" width="3" height="9" rx=".6"/><rect x="12" y="0" width="3" height="12" rx=".6"/></svg><span id="wifi-t">WiFi --</span></div>
+<button type="button" class="chip" id="snd-btn" onclick="LX.toggle()" aria-label="Bật/tắt âm thanh trên trang web" aria-pressed="false" title="Bật/tắt âm thanh trên trang web này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="s-off" d="M17 9l5 6M22 9l-5 6"/></svg></button><input type="range" id="snd-vol" min="0" max="100" step="5" value="70" aria-label="Âm lượng âm thanh trên web" title="Âm lượng âm thanh trên web" oninput="LX.vol(this.value)"></div></div>
   </header>
 
   <!-- THANH TAB CON CỦA CÀI ĐẶT (chỉ hiện khi đang ở Cài đặt) -->
@@ -337,7 +360,7 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
         <text class="tl" x="228" y="146" text-anchor="middle">Tản nhiệt 2</text>
         <text class="tv" x="228" y="159" text-anchor="middle" id="tp-r2">-- °C</text>
 
-        <g id="bat-g" class="bat"><g transform="translate(22 138) scale(0.6667)"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAABvklEQVR42u3dsU4CMQCH8X8vwQgyMBHfwxFYjZss3mRinImruIlhQVdmYxzBAZhMWNWRF3EyBjhFYx0kLoS4yF2vfN8LtNffpe1WiYiIiBLJuDahaqfelLE1SYV/nJ+V9GJl2oPw8hyAJe13Tx+NVFrlGFZ6GoRXZVe+OXBn8esXq178+R9XqnbqTQAWFsaexDeYrQGwWMHTsVIDYDwdKzUAaxkA63gNPeg28h+a3kralbSV4JZgJU0kDTPKHd2FjbH3ANXu2Y709SAp69jPGElBpR+2Rt4CzP/8ZwcX/xfhfRZt3x+2X708Az41vXF48SUpu7mRvfb2ELbSnuuHYtxzjPsWlE/BxSTvMwABAAABAAABAAABAAAALAEAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAf2V9BhinAGDiM8AwBQBDbwHeZ9GxpMjhvedtPkc/AX5eqAsqjiJERkE5zlf0EjmE+2FrlFGuaGR6ce+3y/Z8I9PLKFeM+x1JIiIiSrBvN4BWw8nbKlsAAAAASUVORK5CYII=" width="96" height="96"/><g class="cell" id="cell0" style="--o:0" transform="translate(30 19)"><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell1" style="--o:0" transform="translate(30 33)"><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell2" style="--o:0" transform="translate(30 47)"><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell3" style="--o:0" transform="translate(30 61)"><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell4" style="--o:0" transform="translate(30 75)"><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g></g></g>
+        <g id="bat-g" class="bat"><g transform="translate(22 138) scale(0.6667)"><image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAYAAADimHc4AAABvklEQVR42u3dsU4CMQCH8X8vwQgyMBHfwxFYjZss3mRinImruIlhQVdmYxzBAZhMWNWRF3EyBjhFYx0kLoS4yF2vfN8LtNffpe1WiYiIiBLJuDahaqfelLE1SYV/nJ+V9GJl2oPw8hyAJe13Tx+NVFrlGFZ6GoRXZVe+OXBn8esXq178+R9XqnbqTQAWFsaexDeYrQGwWMHTsVIDYDwdKzUAaxkA63gNPeg28h+a3kralbSV4JZgJU0kDTPKHd2FjbH3ANXu2Y709SAp69jPGElBpR+2Rt4CzP/8ZwcX/xfhfRZt3x+2X708Az41vXF48SUpu7mRvfb2ELbSnuuHYtxzjPsWlE/BxSTvMwABAAABAAABAAABAAAALAEAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAABAAf2V9BhinAGDiM8AwBQBDbwHeZ9GxpMjhvedtPkc/AX5eqAsqjiJERkE5zlf0EjmE+2FrlFGuaGR6ce+3y/Z8I9PLKFeM+x1JIiIiSrBvN4BWw8nbKlsAAAAASUVORK5CYII=" width="96" height="96"/><rect class="cw" x="30" y="19" width="36" height="9" rx="4"/><rect class="cw" x="30" y="33" width="36" height="9" rx="4"/><rect class="cw" x="30" y="47" width="36" height="9" rx="4"/><rect class="cw" x="30" y="61" width="36" height="9" rx="4"/><rect class="cw" x="30" y="75" width="36" height="9" rx="4"/><g class="cell" id="cell0" style="--o:0" transform="translate(30 19)"><rect class="cg" width="36" height="9" rx="4"/><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell1" style="--o:0" transform="translate(30 33)"><rect class="cg" width="36" height="9" rx="4"/><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell2" style="--o:0" transform="translate(30 47)"><rect class="cg" width="36" height="9" rx="4"/><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell3" style="--o:0" transform="translate(30 61)"><rect class="cg" width="36" height="9" rx="4"/><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g><g class="cell" id="cell4" style="--o:0" transform="translate(30 75)"><rect class="cg" width="36" height="9" rx="4"/><use class="u-n" href="#dcN"/><use class="u-m" href="#dcM"/><use class="u-l" href="#dcL"/></g></g></g>
         <text class="vl" x="54" y="224" text-anchor="middle" id="val-bat">-- %</text>
         <text class="st" x="54" y="241" text-anchor="middle" id="val-bat-w">-- W</text>
         <text class="st" x="54" y="256" text-anchor="middle" id="sv-vbat">-- V</text>
@@ -563,6 +586,57 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
+var LX=(function(){
+var KEY='lx_web_snd',VK='lx_web_vol',VOL=70,on=false,ctx=null,S={},armLow=true,armFull=true,armWifi=true,lostSaid=false,lastLow=0,lastWifi=0;
+try{on=localStorage.getItem(KEY)==='1';var sv=parseInt(localStorage.getItem(VK));if(sv>=0&&sv<=100)VOL=sv;}catch(e){}
+function el(i){return document.getElementById(i);}
+function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();}if(ctx.state==='suspended')ctx.resume();return ctx;}catch(e){return null;}}
+function tone(f,t0,d,v){var c=ac();if(!c)return;var o=c.createOscillator(),g=c.createGain(),s=c.currentTime+t0;o.type='sine';o.frequency.value=f;
+g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(Math.max(0.0002,(v||0.3)*(VOL/100)*(VOL/100)),s+0.015);g.gain.exponentialRampToValueAtTime(0.0001,s+d);
+o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+0.03);}
+function say(t,delay){setTimeout(function(){try{var q=window.speechSynthesis;if(!q)return;var u=new SpeechSynthesisUtterance(t);u.lang='vi-VN';u.rate=1;u.volume=VOL/100;q.speak(u);}catch(e){}},delay||0);}
+function up(a,b){tone(a,0,0.16);tone(b,0.17,0.2);}
+function dn(a,b){tone(a,0,0.16);tone(b,0.17,0.2);}
+function beeps(n,f){for(var i=0;i<n;i++)tone(f,i*0.26,0.15);}
+var SND={
+bn1on:function(){up(880,1175);say('Bình nước nóng 1 đã bật',420);},
+bn1off:function(){dn(1175,880);say('Bình nước nóng 1 đã tắt',420);},
+bn2on:function(){up(880,1175);say('Bình nước nóng 2 đã bật',420);},
+bn2off:function(){dn(1175,880);say('Bình nước nóng 2 đã tắt',420);},
+autoon:function(){up(660,990);say('Chế độ tự động đã bật',420);},
+autooff:function(){dn(990,660);say('Chế độ tự động đã tắt',420);},
+low:function(){beeps(3,1000);say('Pin yếu',850);},
+full:function(){up(988,1319);say('Pin đã đầy',420);},
+err:function(){beeps(2,440);say('Lỗi điều khiển',600);},
+wifi:function(){beeps(2,700);say('Sóng WiFi của mạch yếu',600);},
+lost:function(){beeps(2,440);say('Mất kết nối với mạch',600);},
+test:function(){up(880,1175);say('Âm thanh trên web đã bật',420);}};
+function play(id){if(on&&SND[id])SND[id]();}
+function paint(){var b=el('snd-btn');if(!b)return;var r=el('snd-vol');if(r)r.value=VOL;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');}
+function toggle(){on=!on;try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}paint();if(on){ac();SND.test();}else{try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}}}
+function wifi(r){var c=el('wifi');if(!c)return;r=Number(r);var ok=isFinite(r)&&r<0,lv=!ok?0:(r>=-55?4:(r>=-65?3:(r>=-75?2:1)));
+var rs=c.querySelectorAll('rect');for(var i=0;i<rs.length;i++)rs[i].setAttribute('class',i<lv?'on':'');
+c.className='chip '+(!ok?'no':(lv>=3?'':(lv===2?'md':'wk')));
+el('wifi-t').textContent=!ok?'Mất WiFi':((r>=-60?'Mạnh':(r>=-75?'Khá':'Yếu'))+' · '+Math.round(r)+' dBm');
+c.title=!ok?'Mạch chưa có WiFi':('Sóng WiFi của mạch: '+Math.round(r)+' dBm');}
+function feed(p){
+for(var k in p){var v=p[k];if(v===undefined||v===null||(typeof v==='number'&&isNaN(v)))continue;var o=S[k];S[k]=v;if(o===undefined)continue;
+if(k==='b1'||k==='b2'){if(v!==o)play(k+(v?'on':'off'));}
+else if(k==='auto'){if(v!==o)play(v?'autoon':'autooff');}
+else if(k==='err'){if(v&&!o)play('err');}}
+if(p.soc!==undefined&&p.soc!==null&&S.soc!==undefined){var s=S.soc,lw=S.low||25,now=Date.now();
+if(s<=lw){if(armLow||now-lastLow>1800000){armLow=false;lastLow=now;play('low');}}else if(s>=lw+10)armLow=true;
+if(s>=100&&armFull){armFull=false;play('full');}else if(s<=95)armFull=true;}
+if(p.rssi!==undefined&&p.rssi!==null){var r=Number(p.rssi),n2=Date.now();
+if(isFinite(r)&&r<0){if(r<=-80){if(armWifi||n2-lastWifi>1800000){armWifi=false;lastWifi=n2;play('wifi');}}else if(r>-72)armWifi=true;}}}
+function vol(v){VOL=Math.max(0,Math.min(100,parseInt(v)||0));try{localStorage.setItem(VK,String(VOL));}catch(e){}}
+function vtest(){}
+function lost(){if(lostSaid)return;lostSaid=true;play('lost');}
+function ok(){lostSaid=false;}
+paint();
+return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok};})();
+</script>
+<script>
   const PRIO_NAMES = ['Solar > Battery > Grid (SBU)', 'Solar > Grid > Battery (SUB)', 'Grid > Solar > Battery (AC first)'];
 const invDirty = { w: false, p: false };
 const invCur = { w: null, p: null, r: null };
@@ -779,6 +853,12 @@ function pipPaint() {
       else if (tag === 'image') {
         const im = pipImg(c.getAttribute('href'));
         if (im) ctx.drawImage(im, +c.getAttribute('x') || 0, +c.getAttribute('y') || 0, +c.getAttribute('width'), +c.getAttribute('height'));
+      } else if (tag === 'rect' && (c.classList.contains('cw') || c.classList.contains('cg'))) {
+        const rx = +c.getAttribute('x') || 0, ry = +c.getAttribute('y') || 0, rw = +c.getAttribute('width'), rh = +c.getAttribute('height'), rr = +c.getAttribute('rx') || 0;
+        ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(rx, ry, rw, rh, rr); else ctx.rect(rx, ry, rw, rh);
+        if (c.classList.contains('cw')) { ctx.fillStyle = '#fff'; }
+        else { ctx.globalAlpha = parseFloat(c.parentNode.style.getPropertyValue('--o')) || 0; ctx.fillStyle = '#50aa76'; }
+        ctx.fill(); ctx.globalAlpha = 1;
       } else if (tag === 'use' && c.parentNode.classList.contains('cell')) {
         if (c.getAttribute('href') !== '#' + bk) continue;
         const d = svg.querySelector('#' + bk), im = d && pipImg(d.getAttribute('href'));
@@ -873,8 +953,8 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     chip.classList.remove('live', 'stale');
     if (!lastTs) { txt.textContent = 'Đang kết nối'; return; }
     const age = Date.now() / 1000 - lastTs;
-    if (age < 120) { chip.classList.add('live'); txt.textContent = 'Trực tuyến'; }
-    else { chip.classList.add('stale'); txt.textContent = 'Dữ liệu cũ'; }
+    if (age < 120) { chip.classList.add('live'); txt.textContent = 'Trực tuyến'; LX.ok(); }
+    else { chip.classList.add('stale'); txt.textContent = 'Dữ liệu cũ'; LX.lost(); }
   }
   setInterval(refreshChip, 10000);
 
@@ -942,6 +1022,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       $('sv-imp').textContent = 'Mua hôm nay ' + nf(data.ImportDay, 1) + ' kWh';   // Etouser_day (input reg 37)
       $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
       try { invSync(data); } catch (e) {}
+      try { LX.wifi(data.WifiRssi); LX.feed({ soc: soc, rssi: data.WifiRssi, err: data.TuyaErr ? 1 : 0 }); } catch (e) {}
       $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';   // Battery Warning SOC (holding reg 164)
       $('tp-r1').textContent = nf(data.TempRad1, 0) + ' °C'; $('tp-r2').textContent = nf(data.TempRad2, 0) + ' °C';   // nhiệt độ biến tần (reg 64-66)
       const mb = (v) => (typeof v === 'number') ? (v / 1024).toFixed(1) : '--';
@@ -977,6 +1058,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     onIf(['dieukhien'], '/Controls', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
+      try { LX.feed({ b1: !!data.BNNong1, b2: !!data.BNNong2, auto: !!data.Auto }); } catch (e) {}
       ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
         if (data[k] === undefined) return;
         document.getElementById('btn_' + k).checked = !!data[k];
@@ -992,6 +1074,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       if (!data) return;
       const ae = document.activeElement;   // ô đang gõ dở thì không ghi đè
       const set = (id, v) => { const el = document.getElementById(id); if (v !== undefined && el !== ae) el.value = v; };
+      try { LX.feed({ low: parseInt(data.lowsoc) }); } catch (e) {}
       set('auto_on_h', data.onH); set('auto_off_h', data.offH);
       set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
       set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
@@ -1132,7 +1215,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
   const $id = (id) => document.getElementById(id);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   // Đăng nhập bằng số điện thoại: Firebase Authentication cần "email" nên số điện thoại được đổi thành email nội bộ
-  // (VD 0912345678 -> 0912345678@luxpower.vn). Không gửi SMS hay thư nào. Nhập email thật (có @) vẫn dùng được.
+  // (VD 0912345678 -> @luxpower.vn). Không gửi SMS hay thư nào. Nhập email thật (có @) vẫn dùng được.
   const PHONE_DOMAIN = '@luxpower.vn';
   function toAuthEmail(raw) {
     let s = String(raw || '').trim().toLowerCase();
