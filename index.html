@@ -621,7 +621,7 @@ el('wifi-t').textContent=!ok?'Mất WiFi':((r>=-60?'Mạnh':(r>=-75?'Khá':'Yế
 c.title=!ok?'Mạch chưa có WiFi':('Sóng WiFi của mạch: '+Math.round(r)+' dBm');}
 function feed(p){
 for(var k in p){var v=p[k];if(v===undefined||v===null||(typeof v==='number'&&isNaN(v)))continue;var o=S[k];S[k]=v;if(o===undefined)continue;
-if(k==='b1'||k==='b2'){if(v!==o)play(k+(v?'on':'off'));}
+if(k==='b1'||k==='b2'){if(v!==o)play('bn'+k.charAt(1)+(v?'on':'off'));}
 else if(k==='auto'){if(v!==o)play(v?'autoon':'autooff');}
 else if(k==='err'){if(v&&!o)play('err');}}
 if(p.soc!==undefined&&p.soc!==null&&S.soc!==undefined){var s=S.soc,lw=S.low||25,now=Date.now();
