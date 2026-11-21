@@ -3099,6 +3099,7 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       try { await (auth.currentUser || authedUser).getIdToken(true); } catch (_) {}
       ['ac_new', 'ac_new2', 'ac_cur'].forEach((id) => { $id(id).value = ''; });
       toast('Đã đổi mật khẩu thành công');
+      if (me && me.role === 'admin') syncPwToBoard(email, newP);   // mạch dùng chính tài khoản này -> gửi mật khẩu mới sang mạch
     } catch (ex) {
       const msg = isBadCredErr(ex) ? 'Mật khẩu hiện tại không đúng.' : authMsg(ex);
       err.textContent = msg;
@@ -3107,6 +3108,26 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       btn.disabled = false; btn.textContent = 'Lưu mật khẩu mới';
     }
     return false;
+  }
+
+  // Admin đổi mật khẩu xong: ghi /PwSync để mạch (đăng nhập Firebase bằng cùng tài khoản) tự cập nhật mật khẩu.
+  // Mạch nhận xong sẽ tự xóa node này; nếu mạch đang offline thì nhập tay mật khẩu mới ở web mạch (mục Firebase).
+  async function syncPwToBoard(email, newP) {
+    const ref = database.ref('/PwSync');
+    try {
+      await ref.set({ mail: email, pw: newP, ts: firebase.database.ServerValue.TIMESTAMP });
+    } catch (_) {
+      toast('Đã đổi mật khẩu nhưng chưa gửi được sang mạch. Hãy nhập mật khẩu mới ở web mạch (mục Firebase).');
+      return;
+    }
+    let done = false;
+    const cb = (sn) => { if (!done && !sn.exists()) { done = true; ref.off('value', cb); toast('Mạch đã nhận mật khẩu mới'); } };
+    ref.on('value', cb, () => { ref.off('value', cb); });
+    setTimeout(() => {
+      if (done) return;
+      done = true; ref.off('value', cb);
+      toast('Mạch chưa xác nhận. Nếu mạch đang offline, hãy nhập mật khẩu mới ở web mạch (mục Firebase).');
+    }, 40000);
   }
 
   // ===== QUẢN LÝ NGƯỜI DÙNG (chỉ quản trị viên) =====
