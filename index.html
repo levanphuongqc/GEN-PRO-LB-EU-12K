@@ -507,6 +507,100 @@ html,body{overflow-x:clip}
 .zoom-ctl .z-val{font-size:clamp(10.5px,2.8vw,12px);font-weight:700;color:var(--muted);min-width:38px;padding:0 4px}
 .zoom-ctl .z-val:hover{color:var(--ink)}
 
+
+/* ===== DÒNG TRẠNG THÁI ĐIỀU KHIỂN TẢI (HIỆN Ở TẤT CẢ GIAO DIỆN SƠ ĐỒ) ===== */
+.sd-loadbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:clamp(8px,2.2vw,12px);
+  padding:clamp(8px,2.2vw,10px) 4px 2px;
+  border-top:1px solid rgba(255,255,255,.09);
+  font-size:clamp(11.5px,3.2vw,13.5px);
+}
+.sd-loadbar .lb-lbl{
+  color:rgba(255,255,255,.65);
+  font-weight:500;
+  white-space:nowrap;
+}
+.sd-loadbar .lb-pills{
+  display:flex;
+  align-items:center;
+  gap:clamp(6px,1.8vw,8px);
+  margin-left:auto;
+}
+.sd-loadbar .lb-pill{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:4px clamp(9px,2.5vw,12px);
+  border-radius:99px;
+  background:rgba(255,255,255,.09);
+  color:#fff;
+  font-weight:700;
+  white-space:nowrap;
+  letter-spacing:.01em;
+}
+.sd-loadbar .lb-pill b{
+  font-weight:800;
+  color:rgba(255,255,255,.45);
+}
+.sd-loadbar .lb-pill.b1.on b{color:#52e5a8}
+.sd-loadbar .lb-pill.b2.on b{color:#ffd166}
+
+
+/* ===== HIỆU ỨNG ĐỔI MÀU KHUNG THEO KỊCH BẢN (CẢ 8 GIAO DIỆN) ===== */
+.hero{position:relative}
+.hero.st-highpv{
+  border-color:rgba(255,188,45,.55)!important;
+  box-shadow:0 0 0 1px rgba(255,188,45,.25),0 0 26px rgba(255,182,41,.18),inset 0 0 28px rgba(255,182,41,.07)!important;
+}
+.hero.st-night{
+  border-color:rgba(99,138,255,.32)!important;
+  box-shadow:0 0 22px rgba(30,58,138,.22),inset 0 0 28px rgba(15,23,42,.35)!important;
+}
+.hero.st-eps{
+  border-color:rgba(251,146,60,.85)!important;
+  box-shadow:0 0 0 2px rgba(251,146,60,.35),0 0 30px rgba(249,115,22,.32),inset 0 0 34px rgba(249,115,22,.14)!important;
+  animation:sdWarnEps 1.8s ease-in-out infinite;
+}
+.hero.st-low{
+  border-color:rgba(248,113,113,.9)!important;
+  box-shadow:0 0 0 2px rgba(239,68,68,.4),0 0 32px rgba(239,68,68,.38),inset 0 0 36px rgba(239,68,68,.18)!important;
+  animation:sdWarnLow 1.4s ease-in-out infinite;
+}
+@keyframes sdWarnEps{
+  0%,100%{box-shadow:0 0 0 2px rgba(251,146,60,.3),0 0 22px rgba(249,115,22,.22),inset 0 0 24px rgba(249,115,22,.1)}
+  50%{box-shadow:0 0 0 3px rgba(251,146,60,.65),0 0 36px rgba(249,115,22,.45),inset 0 0 42px rgba(249,115,22,.2)}
+}
+@keyframes sdWarnLow{
+  0%,100%{box-shadow:0 0 0 2px rgba(239,68,68,.32),0 0 22px rgba(239,68,68,.24),inset 0 0 24px rgba(239,68,68,.12)}
+  50%{box-shadow:0 0 0 3px rgba(239,68,68,.75),0 0 38px rgba(239,68,68,.5),inset 0 0 44px rgba(239,68,68,.24)}
+}
+.sd-alert{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  margin:0 34px 8px 0;
+  padding:5px 12px;
+  border-radius:10px;
+  font-size:clamp(11px,3vw,12.5px);
+  font-weight:800;
+  letter-spacing:.02em;
+  text-align:center;
+  background:rgba(239,68,68,.2);
+  border:1px solid rgba(248,113,113,.55);
+  color:#fecaca;
+}
+.hero.st-eps:not(.st-low) .sd-alert{
+  background:rgba(249,115,22,.2);
+  border-color:rgba(251,146,60,.6);
+  color:#fed7aa;
+}
+
 </style>
 </head>
 <body class="locked">
@@ -567,6 +661,7 @@ html,body{overflow-x:clip}
 
     <div class="hero" id="hero" data-theme="orig">
       <button type="button" class="pip-btn" id="pip-btn" onclick="togglePip()" hidden aria-label="Hình trong hình" title="Hình trong hình"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.5"/><rect x="12" y="11.5" width="7" height="5" rx="1" fill="currentColor"/></svg></button>
+      <div class="sd-alert" id="sd-alert" hidden></div>
 
       <!-- ===== 0. BẢN GỐC (MẶC ĐỊNH) ===== -->
       <div class="sd-view" data-v="orig">
@@ -1215,6 +1310,15 @@ html,body{overflow-x:clip}
           <div class="iso-pill"><span>Tải hôm nay</span><b id="ind-m-load">-- kWh</b></div>
         </div>
       </div>
+
+      <!-- TRẠNG THÁI ĐIỀU KHIỂN TẢI (DÙNG CHUNG CHO CẢ 8 GIAO DIỆN) -->
+      <div class="sd-loadbar" id="sd-loadbar">
+        <span class="lb-lbl">Trạng thái điều khiển tải:</span>
+        <div class="lb-pills">
+          <span class="lb-pill b1" id="lb-b1">Bình 1: <b id="lb-b1-v">--</b></span>
+          <span class="lb-pill b2" id="lb-b2">Bình 2: <b id="lb-b2-v">--</b></span>
+        </div>
+      </div>
     </div>
 
     <div class="sysbar" aria-label="Thông số của mạch"><span id="sv-ram">RAM -- KB</span><span id="sv-psram">PSRAM -- MB</span><span id="sv-cpu">CPU --%</span></div>
@@ -1854,6 +1958,25 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       const topIdx = Math.max(0, Math.ceil(s / 20) - 1);
       const pvOn = d.pv > 10, loadOn = d.load > 10, batOn = d.batW > 10, gridOn = d.gW > 10;
 
+      // --- HIỆU ỨNG VIỀN & NỀN KHUNG THEO KỊCH BẢN (CẢ 8 GIAO DIỆN) ---
+      const heroEl = byId('hero'), alEl = byId('sd-alert');
+      const isLow = d.soc <= 15;
+      const isHighPv = !d.isEps && !isLow && d.pv >= 3000;
+      const isNight = !d.isEps && !isLow && d.pv <= 10;
+      if (heroEl) {
+        heroEl.classList.toggle('st-low', isLow);
+        heroEl.classList.toggle('st-eps', d.isEps);
+        heroEl.classList.toggle('st-highpv', isHighPv);
+        heroEl.classList.toggle('st-night', isNight);
+      }
+      if (alEl) {
+        const msgs = [];
+        if (d.isEps) msgs.push('⚠ MẤT ĐIỆN LƯỚI · ĐANG CHẠY EPS');
+        if (isLow) msgs.push('🔋 PIN YẾU (' + d.soc + '%)');
+        alEl.hidden = !msgs.length;
+        alEl.textContent = msgs.join('  •  ');
+      }
+
       // --- 0. BẢN GỐC (MẶC ĐỊNH) ---
       txt('val-pv', d.pv + ' W');
       html('hero-pv', d.pv + '<span>W</span>');
@@ -2256,16 +2379,26 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     });
 
     // Trạng thái công tắc
-    onIf(['dieukhien'], '/Controls', (snapshot) => {
+    onIf(['dieukhien', 'sodo'], '/Controls', (snapshot) => {
       const data = snapshot.val();
       if (!data) return;
       try { LX.feed({ b1: !!data.BNNong1, b2: !!data.BNNong2, auto: !!data.Auto }); } catch (e) {}
       ['Auto', 'BNNong1', 'BNNong2'].forEach((k) => {
         if (data[k] === undefined) return;
-        document.getElementById('btn_' + k).checked = !!data[k];
+        const btn = document.getElementById('btn_' + k);
+        if (btn) btn.checked = !!data[k];
         const d = document.getElementById('d_' + k);
-        d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
-        d.classList.toggle('on', !!data[k]);
+        if (d) {
+          d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
+          d.classList.toggle('on', !!data[k]);
+        }
+      });
+      [['BNNong1', 'lb-b1'], ['BNNong2', 'lb-b2']].forEach(([k, id]) => {
+        if (data[k] === undefined) return;
+        const on = !!data[k];
+        const pill = byId(id), val = byId(id + '-v');
+        if (pill) pill.classList.toggle('on', on);
+        if (val) val.textContent = on ? 'BẬT' : 'TẮT';
       });
     });
 
