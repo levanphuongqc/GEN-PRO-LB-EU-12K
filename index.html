@@ -123,6 +123,7 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .btn-save:active{transform:scale(.98)}
 .btn-save:disabled{opacity:.6}
 .sync{text-align:center;color:var(--muted);font-size:12px;margin:10px 0 0}
+.ivf{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.group>h3+.ivf{border-top:0}.ivf .ivl{flex:1;min-width:0}.ivf .t{font-weight:600;font-size:clamp(13px,3.7vw,15px)}.ivf .d{font-size:clamp(11.5px,3.2vw,12.5px);color:var(--muted);margin-top:1px}.ivf .d b{color:var(--ink)}.ivf .ivc{flex:0 0 46%;min-width:0}.ivf .txt,.ivf .sel{margin:0}.ivf .txt input,.ivf .sel select{padding:9px 0;font-size:clamp(14px,3.9vw,15px)}.ivb{display:flex;gap:8px;flex:0 0 52%}.btn-mini{flex:1;padding:10px 6px;border:0;border-radius:12px;background:var(--surface2);color:var(--ink);font-weight:700;font-size:clamp(12.5px,3.5vw,14px);cursor:pointer}.btn-mini.p{background:var(--accent);color:var(--on-accent)}.btn-mini:active{transform:scale(.97)}
 
 /* bottom nav */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none;z-index:20}
@@ -1600,17 +1601,15 @@ body.locked #nav-fab{display:none}
   </section>
   <section id="tab6" class="panel">
     <div class="group"><h3>Cài đặt biến tần</h3>
-      <div class="row"><div><div class="t">Battery Warning SOC</div><div class="d">Cảnh báo pin yếu khi SOC xuống dưới mức này</div></div><b class="iv-val" id="iv-wsoc">-- %</b></div>
-      <div class="row"><div><div class="t">Source Priority (Ưu tiên nguồn)</div><div class="d">Thứ tự nguồn cấp cho tải</div></div><b class="iv-val iv-txt" id="iv-prio">--</b></div>
-    </div>
-    <div class="group"><h3>Thay đổi cài đặt</h3>
-      <div class="field col"><label for="iv-in-wsoc">Battery Warning SOC (%)</label><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" oninput="invDirty.w=true"></div></div>
-      <div class="field col"><label for="iv-in-prio">Source Priority (Ưu tiên nguồn)</label><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option><option value="2">Grid &gt; Solar &gt; Battery (AC first)</option></select></div></div>
-      <p class="sync" id="iv-hint"></p>
+      <div class="ivf"><div class="ivl"><div class="t">Battery Warning SOC</div><div class="d">Hiện tại: <b id="iv-wsoc">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.w=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên nguồn</div><div class="d">Hiện tại: <b id="iv-prio">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option><option value="2">Grid &gt; Solar &gt; Battery (AC first)</option></select></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên sạc PV</div><div class="d">Hiện tại: <b id="iv-pvchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-pvchg" onchange="invDirty.c=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <p class="hint" id="iv-hint" style="margin-top:8px"></p>
       <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
       <p class="sync" id="iv-status"></p>
     </div>
-    <p class="note">Số liệu đọc trực tiếp từ biến tần, cập nhật 5 phút một lần. Giá trị ghi được lưu trong biến tần.</p>
+    <div class="group"><h3>Sạc nhanh</h3>
+      <div class="ivf"><div class="ivl"><div class="t">Trạng thái</div><div class="d"><b id="iv-quick">--</b></div></div><div class="ivb"><button type="button" class="btn-mini p" onclick="invQuick(60)">Bắt đầu 60 phút</button><button type="button" class="btn-mini" onclick="invQuick(0)">Dừng</button></div></div>
+      <p class="sync" id="iv-qstatus"></p>
+    </div>
   </section>
   <section id="tab5" class="panel">
     <div class="group"><h3>Điện năng (kWh)</h3><div style="overflow-x:auto"><table class="stt" id="st-table"></table></div></div>
@@ -1695,14 +1694,16 @@ return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok,isOn:function(
 </script>
 <script>
   const PRIO_NAMES = ['Solar > Battery > Grid (SBU)', 'Solar > Grid > Battery (SUB)', 'Grid > Solar > Battery (AC first)'];
-const invDirty = { w: false, p: false };
-const invCur = { w: null, p: null, r: null };
+const invDirty = { w: false, p: false, c: false };
+const invCur = { w: null, p: null, r: null, c: null };
 let invWait = null;
 const invEl = (id) => document.getElementById(id);
 function invSync(d) {
   invCur.w = d.SetBatWarnSoc == null ? null : +d.SetBatWarnSoc;
   invCur.p = d.SetSrcPrio == null ? null : +d.SetSrcPrio;
   invCur.r = (d.SetBatRecSoc == null || !(+d.SetBatRecSoc > 0)) ? null : +d.SetBatRecSoc;   // 0 = biến tần không dùng mức phục hồi (hoặc giá trị cũ còn sót trên Firebase) -> bỏ qua kiểm tra
+  invCur.c = d.SetPvChg == null ? null : +d.SetPvChg;
+  if (!invDirty.c && invCur.c != null) invEl('iv-in-pvchg').value = invCur.c;
   if (!invDirty.w && invCur.w != null) invEl('iv-in-wsoc').value = invCur.w;
   if (!invDirty.p && invCur.p != null && invCur.p <= 2) invEl('iv-in-prio').value = invCur.p;
   invEl('iv-hint').textContent = 'Cho phép 0–90%' + (invCur.r != null ? ', phải nhỏ hơn mức phục hồi ' + invCur.r + '%' : '') + '.';
@@ -1725,6 +1726,8 @@ async function invApply() {
   const jobs = [];
   if (wn !== invCur.w) jobs.push({ k: 'wsoc', v: wn, t: 'Battery Warning SOC: ' + invCur.w + '% → ' + wn + '%' });
   if (p !== invCur.p) jobs.push({ k: 'prio', v: p, t: 'Source Priority: ' + (PRIO_NAMES[invCur.p] || invCur.p) + ' → ' + PRIO_NAMES[p] });
+  const pc = +invEl('iv-in-pvchg').value;
+  if (invCur.c != null && pc !== invCur.c) jobs.push({ k: 'pvchg', v: pc, t: 'Ưu tiên sạc PV: ' + (invCur.c ? 'Bật' : 'Tắt') + ' → ' + (pc ? 'Bật' : 'Tắt') });
   if (!jobs.length) { st.textContent = 'Không có thay đổi để ghi'; return; }
   if (!confirm('Ghi lên biến tần?\n\n' + jobs.map((j) => j.t).join('\n') + '\n\nCài đặt được lưu trong biến tần và áp dụng ngay.')) return;
   btn.disabled = true;
@@ -1733,9 +1736,17 @@ async function invApply() {
     const r = await invSend(j.k, j.v);
     if (!r.ok) { st.textContent = 'Lỗi: ' + r.msg; toast('Không ghi được: ' + r.msg); btn.disabled = false; return; }
   }
-  invDirty.w = false; invDirty.p = false;
+  invDirty.w = false; invDirty.p = false; invDirty.c = false;
   st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
   btn.disabled = false;
+}
+
+async function invQuick(m) {
+  const st = invEl('iv-qstatus');
+  if (!confirm(m ? 'Bắt đầu sạc nhanh ' + m + ' phút?' : 'Dừng sạc nhanh?')) return;
+  st.textContent = 'Đang ghi...';
+  const r = await invSend('quick', m);
+  st.textContent = r.ok ? 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN') : 'Lỗi: ' + r.msg;
 }
 
 // ===== HÌNH TRONG HÌNH (tab Sơ đồ) =====
@@ -2494,7 +2505,9 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
       try { invSync(data); } catch (e) {}
       try { LX.wifi(data.WifiRssi); LX.feed({ soc: soc, rssi: data.WifiRssi, err: data.TuyaErr ? 1 : 0 }); } catch (e) {}
-      $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';   // Battery Warning SOC (holding reg 164)
+      $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';
+      $('iv-pvchg').textContent = data.SetPvChg == null ? '--' : (+data.SetPvChg ? 'Bật' : 'Tắt');
+      $('iv-quick').textContent = data.SetQuick == null ? '--' : (+data.SetQuick > 0 ? 'Đang sạc, còn ' + data.SetQuick + ' phút' : 'Tắt');   // Battery Warning SOC (holding reg 164)
       $('sv-ram').textContent = 'RAM ' + nf(data.HeapKB, 0) + (data.HeapTotalKB ? '/' + data.HeapTotalKB : '') + ' KB';
       $('sv-psram').textContent = 'PSRAM ' + mb(data.PsramKB) + (data.PsramTotalKB ? '/' + mb(data.PsramTotalKB) : '') + ' MB';
       $('sv-cpu').textContent = 'CPU ' + nf(data.CpuPct, 0) + '%';
