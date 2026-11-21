@@ -601,6 +601,104 @@ html,body{overflow-x:clip}
   color:#fed7aa;
 }
 
+
+/* ===== PA 4: THANH TASKBAR SIÊU MỎNG + NÚT THU GỌN TRONG SUỐT Ở GÓC PHẢI ===== */
+nav{
+  padding:0 clamp(8px,3vw,14px) calc(env(safe-area-inset-bottom,0px) + 6px);
+  transition:transform .24s ease,opacity .22s ease;
+}
+nav .bar-nav{
+  gap:2px;
+  padding:2px 3px;
+  border-radius:14px;
+  max-width:min(100%,460px);
+  align-items:center;
+  box-shadow:0 4px 16px rgba(10,30,26,.16);
+}
+.tab-btn{
+  flex-direction:row!important;
+  justify-content:center;
+  gap:4px!important;
+  padding:5px 4px!important;
+  border-radius:11px!important;
+  font-size:clamp(10.5px,2.8vw,12px)!important;
+  line-height:1.1;
+}
+.tab-btn svg{width:14px!important;height:14px!important;flex:none}
+@media (max-width:359px){
+  .tab-btn{gap:3px!important;padding:5px 2px!important;font-size:9.8px!important}
+  .tab-btn svg{width:13px!important;height:13px!important}
+}
+.nav-hide{
+  flex:none;
+  width:26px;
+  height:26px;
+  border:0;
+  border-radius:9px;
+  background:var(--surface2);
+  color:var(--muted);
+  font-size:15px;
+  font-weight:800;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0 0 2px;
+  margin-left:2px;
+  transition:background .15s,color .15s,transform .12s;
+}
+.nav-hide:hover{color:var(--ink)}
+.nav-hide:active{transform:scale(.9)}
+
+body.nav-min nav{
+  transform:translateY(130%);
+  opacity:0;
+  pointer-events:none;
+}
+body.nav-min .app{
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+}
+body.nav-min #toast{
+  bottom:calc(env(safe-area-inset-bottom,0px) + 20px);
+}
+
+#nav-fab{
+  position:fixed;
+  right:calc(env(safe-area-inset-right,0px) + 10px);
+  bottom:calc(env(safe-area-inset-bottom,0px) + 10px);
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(18,48,43,.32);
+  color:#fff;
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  font-size:14px;
+  line-height:1;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  z-index:25;
+  padding:0;
+  opacity:0;
+  transform:scale(.7);
+  pointer-events:none;
+  transition:opacity .22s ease,transform .22s ease,background .2s;
+}
+body.nav-min #nav-fab{
+  opacity:.48;
+  transform:scale(1);
+  pointer-events:auto;
+}
+body.nav-min #nav-fab:hover,
+body.nav-min #nav-fab:active{
+  opacity:.95;
+  background:var(--accent);
+  color:var(--on-accent);
+}
+body.locked #nav-fab{display:none}
+
 </style>
 </head>
 <body class="locked">
@@ -1522,8 +1620,10 @@ html,body{overflow-x:clip}
     <button type="button" id="btn5" class="tab-btn" onclick="openTab(5)"><svg viewBox="0 0 24 24"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Thống kê</button>
     <button type="button" id="btn1" class="tab-btn" onclick="openTab(1)"><svg viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>Điều khiển</button>
     <button type="button" id="btn7" class="tab-btn" onclick="openTab(7)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg>Cài đặt</button>
+    <button type="button" class="nav-hide" onclick="NAV.toggle()" aria-label="Thu gọn thanh điều hướng" title="Thu gọn thanh điều hướng">⌄</button>
   </div>
 </nav>
+<button type="button" id="nav-fab" onclick="NAV.toggle()" aria-label="Mở thanh điều hướng" title="Mở thanh điều hướng">☰</button>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -2253,6 +2353,23 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     apply();
 
     return { step, set, reset, restoreScroll, get value() { return z; } };
+  })();
+
+
+  // ===== THU GỌN / MỞ THANH ĐIỀU HƯỚNG (PA 4) =====
+  const NAV = (function () {
+    const KEY = 'lx_nav_min';
+    let min = false;
+    try { min = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    function apply() { document.body.classList.toggle('nav-min', min); }
+    function toggle() {
+      min = !min;
+      try { localStorage.setItem(KEY, min ? '1' : '0'); } catch (e) {}
+      apply();
+    }
+    document.addEventListener('DOMContentLoaded', apply);
+    apply();
+    return { toggle };
   })();
 
   let lastTs = 0;
