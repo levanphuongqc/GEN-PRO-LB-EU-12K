@@ -124,6 +124,10 @@ svg.flow{display:block;width:100%;height:auto;margin-top:4px}
 .btn-save:disabled{opacity:.6}
 .sync{text-align:center;color:var(--muted);font-size:12px;margin:10px 0 0}
 .ivf{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.group>h3+.ivf{border-top:0}.ivf .ivl{flex:1;min-width:0}.ivf .t{font-weight:600;font-size:clamp(13px,3.7vw,15px)}.ivf .d{font-size:clamp(11.5px,3.2vw,12.5px);color:var(--muted);margin-top:1px}.ivf .d b{color:var(--ink)}.ivf .ivc{flex:0 0 46%;min-width:0}.ivf .txt,.ivf .sel{margin:0}.ivf .txt input,.ivf .sel select{padding:9px 0;font-size:clamp(14px,3.9vw,15px)}.ivb{display:flex;gap:8px;flex:0 0 52%}.btn-mini{flex:1;padding:10px 6px;border:0;border-radius:12px;background:var(--surface2);color:var(--ink);font-weight:700;font-size:clamp(12.5px,3.5vw,14px);cursor:pointer}.btn-mini.p{background:var(--accent);color:var(--on-accent)}.btn-mini:active{transform:scale(.97)}
+#tab2 .group>h3{cursor:pointer;user-select:none}#tab2 .group>h3::after{content:" ▾";color:var(--muted);font-weight:400}#tab2 .group.fold>h3::after{content:" ▸"}
+#tab2 .group.fold>*:not(h3):not(.sumline){display:none}.sumline{margin:0 0 8px;font-size:12.5px;color:var(--muted)}.sumline b{color:var(--ink)}
+.qt{display:flex;gap:8px;align-items:center;flex:0 0 58%}.qt .num{flex:1;min-width:0}
+pre.chg{margin:6px 0 0;padding:10px;border-radius:12px;background:var(--surface2);font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word;max-height:180px;overflow:auto}
 
 /* bottom nav */
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 12px);pointer-events:none;z-index:20}
@@ -756,6 +760,7 @@ body.locked #nav-fab{display:none}
     <button type="button" id="sb3" role="tab" onclick="openTab(3)">Âm thanh</button>
     <button type="button" id="sb6" role="tab" onclick="openTab(6)">Biến tần</button>
     <button type="button" id="sb4" role="tab" onclick="openTab(4)">Tài khoản</button>
+    <button type="button" id="sb8" role="tab" onclick="openTab(8)">Hệ thống</button>
   </div>
 
   <!-- SƠ ĐỒ -->
@@ -1479,20 +1484,23 @@ body.locked #nav-fab{display:none}
 
     <div class="group">
       <h3 style="--c:var(--load)">Bình nước nóng 1</h3>
+      <p class="sumline" id="sum_b1"></p>
       <div class="field"><label for="b1_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_on"><em>W</em></div></div>
       <div class="field"><label for="b1_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b1_off"><em>W</em></div></div>
-      <div class="field"><label for="b1_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b1_soc"><em>%</em></div></div>
+      <div class="field"><label for="b1_soc">Chỉ chạy khi pin ≥</label><div class="num"><input type="number" inputmode="numeric" id="b1_soc"><em>%</em></div></div>
     </div>
 
     <div class="group">
       <h3 style="--c:var(--grid)">Bình nước nóng 2</h3>
+      <p class="sumline" id="sum_b2"></p>
       <div class="field"><label for="b2_on">Bật khi PV dư lớn hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_on"><em>W</em></div></div>
       <div class="field"><label for="b2_off">Tắt khi PV dư nhỏ hơn</label><div class="num"><input type="number" inputmode="numeric" id="b2_off"><em>W</em></div></div>
-      <div class="field"><label for="b2_soc">Kích hoạt khi pin trên</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
+      <div class="field"><label for="b2_soc">Chỉ chạy khi pin ≥</label><div class="num"><input type="number" inputmode="numeric" id="b2_soc"><em>%</em></div></div>
     </div>
 
     <div class="group">
       <h3 style="--c:var(--load)">Hẹn giờ bình nước nóng 1</h3>
+      <p class="sumline" id="sum_t1"></p>
       <div class="row">
         <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
         <label class="switch"><input type="checkbox" id="t1_en" aria-label="Hẹn giờ bình nước nóng 1"><span></span></label>
@@ -1503,6 +1511,7 @@ body.locked #nav-fab{display:none}
 
     <div class="group">
       <h3 style="--c:var(--grid)">Hẹn giờ bình nước nóng 2</h3>
+      <p class="sumline" id="sum_t2"></p>
       <div class="row">
         <div><div class="t">Bật hẹn giờ</div><div class="d">Trong khung giờ, bình luôn bật (Auto không can thiệp)</div></div>
         <label class="switch"><input type="checkbox" id="t2_en" aria-label="Hẹn giờ bình nước nóng 2"><span></span></label>
@@ -1525,19 +1534,18 @@ body.locked #nav-fab{display:none}
       </div>
       <div class="field col"><label for="snd_voice">Giọng đọc</label><div class="sel"><select id="snd_voice"><option value="0">Giọng nữ</option><option value="1">Giọng nam</option></select></div></div>
       <div class="field"><label for="snd_vol">Âm lượng loa</label><div class="num"><input type="number" inputmode="numeric" min="0" max="100" id="snd_vol"><em>%</em></div></div>
-      <div class="field"><label for="snd_low">Báo pin yếu khi pin còn</label><div class="num"><input type="number" inputmode="numeric" min="1" max="50" id="snd_low"><em>%</em></div></div>
+      <div class="field"><label>Thử loa trên mạch</label><button type="button" class="btn-test" id="btn-sndtest" onclick="sndTest()">Phát thử</button></div>
+      <div class="field"><label for="snd_low">Đọc giọng cảnh báo khi pin còn</label><div class="num"><input type="number" inputmode="numeric" min="1" max="50" id="snd_low"><em>%</em></div></div>
       <div class="row">
         <div><div class="t">Đọc cả khi Auto/hẹn giờ tự đổi</div><div class="d">Tắt để chỉ đọc khi bạn tự bấm</div></div>
         <label class="switch"><input type="checkbox" id="snd_auto" aria-label="Đọc cả khi Auto hoặc hẹn giờ tự đổi"><span></span></label>
       </div>
-      <div class="field"><label>Thử loa trên mạch</label><button type="button" class="btn-test" id="btn-sndtest" onclick="sndTest()">Phát thử</button></div>
     </div>
 
     <div class="group">
       <h3 style="--c:var(--grid)">Giờ im lặng</h3>
       <p class="hint">Trong khung giờ này mạch không phát âm thanh. Để trống cả hai ô nếu không cần. Hỗ trợ qua nửa đêm, ví dụ 22:00 đến 06:00.</p>
-      <div class="field"><label for="snd_qs">Im lặng từ</label><div class="num tm"><input type="time" id="snd_qs"></div></div>
-      <div class="field"><label for="snd_qe">Im lặng đến</label><div class="num tm"><input type="time" id="snd_qe"></div></div>
+      <div class="field"><label for="snd_qs">Từ giờ – đến giờ</label><div class="qt"><div class="num tm"><input type="time" id="snd_qs" aria-label="Im lặng từ"></div><div class="num tm"><input type="time" id="snd_qe" aria-label="Im lặng đến"></div></div></div>
     </div>
 
     <button type="button" class="btn-save" id="btn-save-snd" onclick="saveSound()">Lưu cài đặt âm thanh</button>
@@ -1583,6 +1591,32 @@ body.locked #nav-fab{display:none}
       <p class="err" id="nu_err" role="alert" style="color:var(--load)"></p>
       <button type="submit" class="btn-save" id="nu_btn" style="margin-bottom:14px">Tạo tài khoản</button>
     </form>
+    <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
+  </section>
+  <section id="tab6" class="panel">
+    <div class="group"><h3>Cài đặt biến tần</h3>
+      <div class="ivf"><div class="ivl"><div class="t">Battery Warning SOC</div><div class="d">Hiện tại: <b id="iv-wsoc">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.w=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên nguồn</div><div class="d">Hiện tại: <b id="iv-prio">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option><option value="2">Grid &gt; Solar &gt; Battery (AC first)</option></select></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên sạc PV</div><div class="d">Hiện tại: <b id="iv-pvchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-pvchg" onchange="invDirty.c=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <p class="hint" id="iv-hint" style="margin-top:8px"></p>
+      <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
+      <p class="sync" id="iv-status"></p>
+    </div>
+    <div class="group"><h3>Sạc nhanh</h3>
+      <div class="ivf"><div class="ivl"><div class="t">Trạng thái</div><div class="d"><b id="iv-quick">--</b></div></div><div class="ivb"><button type="button" class="btn-mini p" onclick="invQuick(60)">Bắt đầu 60 phút</button><button type="button" class="btn-mini" onclick="invQuick(0)">Dừng</button></div></div>
+      <p class="sync" id="iv-qstatus"></p>
+    </div>
+    <div class="group"><h3>Thay đổi cài đặt gần đây</h3>
+      <pre class="chg" id="iv-chg">Chưa có thay đổi nào được ghi nhận.</pre>
+      <p class="sync" id="iv-readat"></p>
+    </div>
+  </section>
+  <section id="tab8" class="panel">
+    <div class="group"><h3 style="--c:var(--bat)">Thông tin mạch</h3>
+      <div class="row"><div><div class="t">RAM</div></div><b class="iv-val" id="sys-ram">--</b></div>
+      <div class="row"><div><div class="t">PSRAM</div></div><b class="iv-val" id="sys-psram">--</b></div>
+      <div class="row"><div><div class="t">CPU</div></div><b class="iv-val" id="sys-cpu">--</b></div>
+      <div class="row"><div><div class="t">Sóng WiFi</div></div><b class="iv-val" id="sys-wifi">--</b></div>
+      <div class="row"><div><div class="t">Cập nhật lần cuối</div></div><b class="iv-val" id="sys-seen">--</b></div>
+    </div>
     <div class="group" id="fw-group">
       <h3 style="--c:var(--bat)">Cập nhật firmware</h3>
       <p class="hint">Nạp file <b>.ino.bin</b> mới cho mạch qua WiFi. Điện thoại/máy tính phải cùng mạng WiFi với mạch, vì trang nạp nằm trên mạch chứ không nằm trên mạng.</p>
@@ -1597,22 +1631,11 @@ body.locked #nav-fab{display:none}
       <p class="hint">Chỉ cần khi mạch bị treo. Đổi cài đặt thì không cần khởi động lại. Lệnh gửi đến tất cả mạch đang dùng chung dữ liệu này; mạch sẽ trực tuyến lại sau khoảng 20–30 giây.</p>
       <button type="button" class="btn-test" id="btn-restart" onclick="restartBoard()" style="margin:6px 0 4px">Khởi động lại mạch</button>
     </div>
-    <button type="button" class="btn-out" onclick="logout()">Đăng xuất</button>
   </section>
-  <section id="tab6" class="panel">
-    <div class="group"><h3>Cài đặt biến tần</h3>
-      <div class="ivf"><div class="ivl"><div class="t">Battery Warning SOC</div><div class="d">Hiện tại: <b id="iv-wsoc">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.w=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên nguồn</div><div class="d">Hiện tại: <b id="iv-prio">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-prio" onchange="invDirty.p=true"><option value="0">Solar &gt; Battery &gt; Grid (SBU)</option><option value="1">Solar &gt; Grid &gt; Battery (SUB)</option><option value="2">Grid &gt; Solar &gt; Battery (AC first)</option></select></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên sạc PV</div><div class="d">Hiện tại: <b id="iv-pvchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-pvchg" onchange="invDirty.c=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
-      <p class="hint" id="iv-hint" style="margin-top:8px"></p>
-      <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
-      <p class="sync" id="iv-status"></p>
-    </div>
-    <div class="group"><h3>Sạc nhanh</h3>
-      <div class="ivf"><div class="ivl"><div class="t">Trạng thái</div><div class="d"><b id="iv-quick">--</b></div></div><div class="ivb"><button type="button" class="btn-mini p" onclick="invQuick(60)">Bắt đầu 60 phút</button><button type="button" class="btn-mini" onclick="invQuick(0)">Dừng</button></div></div>
-      <p class="sync" id="iv-qstatus"></p>
-    </div>
-  </section>
+  
   <section id="tab5" class="panel">
-    <div class="group"><h3>Điện năng (kWh)</h3><div style="overflow-x:auto"><table class="stt" id="st-table"></table></div></div>
+    <div class="group"><h3>Điện năng (kWh)</h3><div style="overflow-x:auto"><table class="stt" id="st-table"></table></div>
+      <button type="button" class="btn-test" onclick="statCsv()" style="margin-top:10px">Tải CSV theo ngày</button></div>
     <div class="group"><h3>Biểu đồ</h3>
       <div class="st-ctl">
         <select id="st-mode" onchange="statRender()"><option value="d">Các ngày trong tháng</option><option value="m">Các tháng trong năm</option></select>
@@ -1693,6 +1716,41 @@ paint();
 return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok,isOn:function(){return on;}};})();
 </script>
 <script>
+  const lastCtl = {}; let devWhy = {};
+  function devNote(k) {   // dòng trạng thái của bình: bật/tắt + lý do + còn khoá thủ công bao lâu
+    const d = document.getElementById('d_' + k); if (!d || lastCtl[k] === undefined) return;
+    const w = devWhy[k] || [0, 0], on = lastCtl[k];
+    let t = on ? 'Đang bật' : 'Đang tắt';
+    if (w[0] === 2) t += ' · theo hẹn giờ'; else if (on && w[0] === 1) t += ' · do Auto'; else if (on && w[0] === 0) t += ' · thủ công';
+    if (w[1] > 0) t += ' · Auto tạm dừng ' + Math.ceil(w[1] / 60) + ' phút (vừa bấm tay)';
+    d.textContent = t;
+  }
+  function sysSync(d) {
+    const g = (id) => document.getElementById(id), nfx = (v, n) => (typeof v === 'number') ? v.toFixed(n) : '--';
+    g('sys-ram').textContent = nfx(d.HeapKB, 0) + (d.HeapTotalKB ? ' / ' + d.HeapTotalKB : '') + ' KB';
+    g('sys-psram').textContent = typeof d.PsramKB === 'number' ? (d.PsramKB / 1024).toFixed(1) + (d.PsramTotalKB ? ' / ' + (d.PsramTotalKB / 1024).toFixed(1) : '') + ' MB' : '--';
+    g('sys-cpu').textContent = nfx(d.CpuPct, 0) + ' %';
+    g('sys-wifi').textContent = typeof d.WifiRssi === 'number' ? d.WifiRssi + ' dBm' : '--';
+    g('sys-seen').textContent = d.ts ? new Date(d.ts * 1000).toLocaleTimeString('vi-VN') : '--';
+    g('iv-readat').textContent = d.SetTs ? 'Đọc từ biến tần lúc ' + new Date(d.SetTs * 1000).toLocaleTimeString('vi-VN') + ' (5 phút làm mới một lần)' : '';
+    g('iv-chg').textContent = d.ChgLog ? String(d.ChgLog) : 'Chưa có thay đổi nào được ghi nhận.';
+  }
+  function autoSum() {
+    const g = (id) => { const e = document.getElementById(id); return e ? e.value : ''; };
+    ['b1', 'b2'].forEach((b) => {
+      const e = document.getElementById('sum_' + b); if (!e) return;
+      e.innerHTML = 'Bật khi dư &gt; <b>' + (g(b + '_on') || '--') + ' W</b> · tắt khi &lt; <b>' + (g(b + '_off') || '--') + ' W</b> · pin ≥ <b>' + (g(b + '_soc') || '--') + '%</b>';
+    });
+    ['t1', 't2'].forEach((p) => {
+      const e = document.getElementById('sum_' + p), en = document.getElementById(p + '_en'); if (!e || !en) return;
+      e.innerHTML = en.checked ? 'Đang <b>bật</b>: ' + (g(p + '_on') || '--:--') + ' – ' + (g(p + '_off') || '--:--') : 'Đang <b>tắt</b>';
+    });
+  }
+  setInterval(autoSum, 1000);
+  document.querySelectorAll('#tab2 .group > h3').forEach((h3) => {   // bấm tên mục để gập/mở; hẹn giờ mặc định gập cho ngắn
+    h3.addEventListener('click', () => h3.parentElement.classList.toggle('fold'));
+    if (/^Hẹn giờ/.test(h3.textContent)) h3.parentElement.classList.add('fold');
+  });
   const PRIO_NAMES = ['Solar > Battery > Grid (SBU)', 'Solar > Grid > Battery (SUB)', 'Grid > Solar > Battery (AC first)'];
 const invDirty = { w: false, p: false, c: false };
 const invCur = { w: null, p: null, r: null, c: null };
@@ -1954,15 +2012,15 @@ document.addEventListener('DOMContentLoaded', () => {
   if (m === 'video') { try { pipPrep(); setTimeout(pipPaint, 1500); } catch (e) {} }
 });
 
-const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
+const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tài khoản: nằm trong tab Cài đặt
   let lastSet = 2;
   function openTab(t) {
     if (t === 7) t = lastSet;
-    const NEED = { 0: 'sodo', 5: 'thongke', 1: 'dieukhien', 2: 'auto', 3: 'amthanh', 6: 'bientan' };
+    const NEED = { 0: 'sodo', 5: 'thongke', 1: 'dieukhien', 2: 'auto', 3: 'amthanh', 6: 'bientan', 8: 'hethong' };
     if (NEED[t] && !can(NEED[t])) return;
     const inSet = SET_TABS.indexOf(t) >= 0;
     if (inSet) lastSet = t;
-    for (let i = 0; i < 7; i++) document.getElementById('tab' + i).classList.toggle('active', i === t);
+    [0, 1, 2, 3, 4, 5, 6, 8].forEach((i) => document.getElementById('tab' + i).classList.toggle('active', i === t));
     [0, 1, 5].forEach((i) => document.getElementById('btn' + i).classList.toggle('active', i === t));
     document.getElementById('btn7').classList.toggle('active', inSet);
     document.getElementById('subnav').hidden = !inSet;
@@ -2415,6 +2473,15 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
   setInterval(pvDayRender, 30000);
   const E = (id) => byId(id), p2 = (n) => String(n).padStart(2, '0');
   function sumPre(pre) { const o = [0, 0, 0, 0, 0, 0]; for (const k in hist) if (k.indexOf(pre) === 0) SK.forEach((m, i) => { o[i] += hist[k][m] || 0; }); return o; }
+  function statCsv() {   // xuất toàn bộ /History (mỗi ngày một dòng); BOM để Excel đọc đúng tiếng Việt
+    const days = Object.keys(hist).sort();
+    if (!days.length) { toast('Chưa có số liệu để xuất'); return; }
+    const rows = ['Ngày,' + SN.join(',') + ' (kWh)'].concat(days.map((d) => d.slice(0, 4) + '-' + d.slice(4, 6) + '-' + d.slice(6, 8) + ',' + SK.map((k) => (+hist[d][k] || 0).toFixed(1)).join(',')));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['\ufeff' + rows.join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'luxpower_dien_nang.csv'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  }
   function statRender() {
     const n = new Date(), y = '' + n.getFullYear(), m = p2(n.getMonth() + 1), td = hist[y + m + p2(n.getDate())];
     const rows = [['Hôm nay', td ? SK.map((k) => td[k] || 0) : null], ['Tháng này', sumPre(y + m)], ['Năm nay', sumPre(y)], ['Tổng', tot ? SK.map((k) => tot[k] || 0) : null]];
@@ -2504,6 +2571,8 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
 
       $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
       try { invSync(data); } catch (e) {}
+      try { devWhy = { BNNong1: [data.Dev1Why | 0, data.Dev1Lock | 0], BNNong2: [data.Dev2Why | 0, data.Dev2Lock | 0] }; devNote('BNNong1'); devNote('BNNong2'); } catch (e) {}
+      try { sysSync(data); } catch (e) {}
       try { LX.wifi(data.WifiRssi); LX.feed({ soc: soc, rssi: data.WifiRssi, err: data.TuyaErr ? 1 : 0 }); } catch (e) {}
       $('iv-wsoc').textContent = (data.SetBatWarnSoc == null ? '--' : data.SetBatWarnSoc) + ' %';
       $('iv-pvchg').textContent = data.SetPvChg == null ? '--' : (+data.SetPvChg ? 'Bật' : 'Tắt');
@@ -2535,7 +2604,7 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
         if (btn) btn.checked = !!data[k];
         const d = document.getElementById('d_' + k);
         if (d) {
-          d.textContent = data[k] ? 'Đang bật' : 'Đang tắt';
+          lastCtl[k] = !!data[k]; devNote(k);
           d.classList.toggle('on', !!data[k]);
         }
       });
@@ -2662,6 +2731,10 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
       const hh = +m[1], mm = +m[2];
       return (hh > 23 || mm > 59) ? -1 : hh * 60 + mm;
     };
+    for (const b of ['b1', 'b2']) {   // ngưỡng bật phải lớn hơn ngưỡng tắt, nếu không bình sẽ bật/tắt liên tục
+      const on = v(b + '_on'), off = v(b + '_off');
+      if (!isNaN(on) && !isNaN(off) && on <= off) { toast('Bình nước nóng ' + b[1] + ': ngưỡng bật phải lớn hơn ngưỡng tắt'); return; }
+    }
     const sch = {};
     for (const p of ['t1', 't2']) {
       const en = document.getElementById(p + '_en').checked;
@@ -2862,9 +2935,9 @@ const SET_TABS = [2, 3, 6, 4];          // Biến tần, Auto, Âm thanh, Tài k
     const show = (id, ok) => { const e = $id(id); if (e) e.hidden = !ok; };
     show('btn0', can('sodo')); show('btn5', can('thongke')); show('btn1', can('dieukhien'));
     show('sb2', can('auto')); show('sb3', can('amthanh')); show('sb6', can('bientan'));
-    show('fw-group', can('hethong')); show('rs-group', can('hethong'));
+    show('sb8', can('hethong')); show('fw-group', can('hethong')); show('rs-group', can('hethong'));
     show('um-group', me.role === 'admin'); show('um-add', me.role === 'admin');
-    const firstSet = [[2, 'auto'], [3, 'amthanh'], [6, 'bientan']].find((x) => can(x[1]));
+    const firstSet = [[2, 'auto'], [3, 'amthanh'], [6, 'bientan'], [8, 'hethong']].find((x) => can(x[1]));
     lastSet = firstSet ? firstSet[0] : 4;
     const first = [[0, 'sodo'], [5, 'thongke'], [1, 'dieukhien']].find((x) => can(x[1]));
     openTab(first ? first[0] : 7);
