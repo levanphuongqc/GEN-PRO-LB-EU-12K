@@ -232,6 +232,12 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
   .tab-btn{flex-direction:row;justify-content:center;gap:6px;padding:5px 6px}
   .app{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 52px)}
 }
+/* điện thoại: tên và model mỗi dòng giữ nguyên 1 hàng, không tự xuống dòng */
+@media (max-width:719px){
+  header .brand{flex:0 0 auto}
+  header .brand h1,header .brand p{white-space:nowrap}
+  header .hr{min-width:0}
+}
 /* máy tính bảng */
 @media (min-width:720px){
   .app{max-width:680px}
@@ -571,7 +577,7 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
 
 <div class="app">
   <header>
-    <div>
+    <div class="brand">
       <h1>Lê Văn Phương</h1>
       <p>Lux GEN PRO-LB-EU 12K</p>
     </div>
