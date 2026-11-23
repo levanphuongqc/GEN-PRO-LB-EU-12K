@@ -560,6 +560,21 @@ body.locked #nav-fab{display:none}
 body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
 #tab0:not(.active) *, #tab0:not(.active) *::before, #tab0:not(.active) *::after { animation-play-state:paused!important }
 @media (display-mode:standalone){html,body{overscroll-behavior-y:none}}
+
+/* ===== BIỂU ĐỒ CÔNG SUẤT HÔM NAY (THỜI GIAN THỰC) ===== */
+.rt-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 6px}
+.rt-head h3{margin:0;font-size:clamp(13.5px,3.9vw,15.5px);font-weight:700;display:flex;align-items:center;gap:8px}
+.rt-head h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--pv)}
+.rt-leg{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px}
+.rt-leg button{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);color:var(--ink);font-size:11.5px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.rt-leg button i{width:10px;height:3px;border-radius:2px;background:var(--lc);display:inline-block}
+.rt-leg button.off{opacity:.38;text-decoration:line-through}
+.rt-wrap{position:relative;width:100%;touch-action:pan-y}
+#rt-svg{display:block;width:100%;height:auto;user-select:none}
+.rt-tip{position:absolute;top:4px;left:8px;background:var(--ink);color:var(--bg);padding:6px 10px;border-radius:10px;font-size:11.5px;line-height:1.45;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.22);z-index:5;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rt-tip b{font-weight:800}
+.rt-ft{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:6px;font-size:11.5px;color:var(--muted)}
+.rt-clr{border:0;background:none;color:var(--muted);font-size:11.5px;font-weight:600;cursor:pointer;text-decoration:underline;padding:2px 4px}
 </style>
 </head>
 <body class="locked checking">
@@ -876,6 +891,27 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
   <section id="tab5" class="panel">
     <div class="group"><h3>Điện năng (kWh)</h3><div style="overflow-x:auto"><table class="stt" id="st-table"></table></div>
       <button type="button" class="btn-test" onclick="statCsv()" style="margin-top:10px">Tải CSV theo ngày</button></div>
+    <div class="group">
+      <div class="rt-head">
+        <h3>Công suất hôm nay (Thời gian thực)</h3>
+        <span id="rt-date" style="font-size:12px;color:var(--muted);font-weight:600">--/--/----</span>
+      </div>
+      <div class="rt-leg" id="rt-leg">
+        <button type="button" data-k="pv" style="--lc:#22c55e"><i></i>Solar PV</button>
+        <button type="button" data-k="bat" style="--lc:#3b82f6"><i></i>Battery</button>
+        <button type="button" data-k="grid" style="--lc:#ef4444"><i></i>Grid</button>
+        <button type="button" data-k="load" style="--lc:#f59e0b"><i></i>Tiêu thụ</button>
+        <button type="button" data-k="soc" style="--lc:#a855f7"><i></i>SOC (%)</button>
+      </div>
+      <div class="rt-wrap" id="rt-wrap">
+        <svg id="rt-svg" viewBox="0 0 360 190" role="img" aria-label="Biểu đồ công suất hôm nay theo thời gian thực"></svg>
+        <div class="rt-tip" id="rt-tip" hidden></div>
+      </div>
+      <div class="rt-ft">
+        <span id="rt-info">Đang chờ dữ liệu thời gian thực...</span>
+        <button type="button" class="rt-clr" onclick="RTChart.clear()">Xoá dữ liệu hôm nay</button>
+      </div>
+    </div>
     <div class="group"><h3>Biểu đồ</h3>
       <div class="st-ctl">
         <select id="st-mode" onchange="statRender()"><option value="d">Các ngày trong tháng</option><option value="m">Các tháng trong năm</option></select>
@@ -1524,6 +1560,184 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
     if (document.hidden) hideTimer = setTimeout(pauseLive, 8000); else resumeLive();
   });
 
+  // ===== BIỂU ĐỒ CÔNG SUẤT HÔM NAY THEO THỜI GIAN THỰC =====
+  const RTChart = (function () {
+    const PREFIX = 'lx_rt_';
+    const SERIES = [
+      { k: 'pv',   name: 'Solar PV', c: '#22c55e', u: 'W' },
+      { k: 'bat',  name: 'Battery',  c: '#3b82f6', u: 'W' },
+      { k: 'grid', name: 'Grid',     c: '#ef4444', u: 'W' },
+      { k: 'load', name: 'Tiêu thụ', c: '#f59e0b', u: 'W' },
+      { k: 'soc',  name: 'SOC',      c: '#a855f7', u: '%' }
+    ];
+    const hidden = {};
+    let dayKey = '', pts = [], lastPush = 0, hoverIdx = -1;
+
+    function todayKey(ms) {
+      const d = new Date(ms || Date.now());
+      return d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate());
+    }
+    function fmtDate(k) { return k ? k.slice(6, 8) + '/' + k.slice(4, 6) + '/' + k.slice(0, 4) : '--'; }
+    function fmtHM(sec) { const d = new Date(sec * 1000); return p2(d.getHours()) + ':' + p2(d.getMinutes()); }
+
+    function load(k) {
+      dayKey = k;
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const lk = localStorage.key(i);
+          if (lk && lk.indexOf(PREFIX) === 0 && lk !== PREFIX + k) localStorage.removeItem(lk);
+        }
+        pts = JSON.parse(localStorage.getItem(PREFIX + k) || '[]');
+        if (!Array.isArray(pts)) pts = [];
+      } catch (e) { pts = []; }
+      lastPush = pts.length ? pts[pts.length - 1].t : 0;
+    }
+
+    function save() {
+      try { localStorage.setItem(PREFIX + dayKey, JSON.stringify(pts)); } catch (e) {}
+    }
+
+    function push(d) {
+      const ts = d.ts || Math.floor(Date.now() / 1000);
+      const k = todayKey(ts * 1000);
+      if (k !== dayKey) load(k);
+      if (pts.length && ts - lastPush < 30) return;
+      pts.push({
+        t: ts,
+        pv: Math.round(d.pv || 0),
+        bat: Math.round((d.charge || 0) - (d.discharge || 0)),
+        grid: Math.round((d.gridIn || 0) - (d.gridOut || 0)),
+        load: Math.round(d.load || 0),
+        soc: Math.round(d.soc || 0)
+      });
+      if (pts.length > 2880) pts.shift();
+      lastPush = ts;
+      save();
+      render();
+    }
+
+    function clear() {
+      if (!confirm('Xoá dữ liệu biểu đồ thời gian thực hôm nay trên trình duyệt này?')) return;
+      pts = []; lastPush = 0; hoverIdx = -1;
+      save(); render();
+    }
+
+    function render() {
+      const svg = document.getElementById('rt-svg');
+      const dtEl = document.getElementById('rt-date');
+      const infoEl = document.getElementById('rt-info');
+      if (!svg) return;
+      if (!dayKey) load(todayKey());
+      if (dtEl) dtEl.textContent = fmtDate(dayKey);
+
+      const W = 360, H = 190, L = 40, R = 330, T = 12, B = 164;
+      const pw = R - L, ph = B - T;
+
+      if (!pts.length) {
+        svg.innerHTML = '<text x="' + (W / 2) + '" y="' + (H / 2) + '" text-anchor="middle" font-size="11.5" fill="var(--muted)">Chưa có điểm dữ liệu hôm nay (tự động ghi mỗi 30 giây)</text>';
+        if (infoEl) infoEl.textContent = 'Đang chờ dữ liệu từ mạch...';
+        return;
+      }
+
+      let maxW = 1500;
+      pts.forEach((p) => {
+        if (!hidden.pv)   maxW = Math.max(maxW, Math.abs(p.pv));
+        if (!hidden.bat)  maxW = Math.max(maxW, Math.abs(p.bat));
+        if (!hidden.grid) maxW = Math.max(maxW, Math.abs(p.grid));
+        if (!hidden.load) maxW = Math.max(maxW, Math.abs(p.load));
+      });
+      const stepW = maxW <= 1500 ? 750 : (maxW <= 3000 ? 1500 : (maxW <= 6000 ? 3000 : 6000));
+      const limW = stepW * 2;
+
+      const tMin = pts[0].t, tMax = Math.max(pts[pts.length - 1].t, tMin + 60);
+      const xOf = (t) => L + ((t - tMin) / (tMax - tMin)) * pw;
+      const yW = (v) => T + ((limW - v) / (limW * 2)) * ph;
+      const yS = (v) => B - (Math.max(0, Math.min(100, v)) / 100) * ph;
+
+      let out = '';
+      [limW, stepW, 0, -stepW, -limW].forEach((wv, idx) => {
+        const y = yW(wv), socLab = 100 - idx * 25;
+        out += '<line x1="' + L + '" y1="' + y.toFixed(1) + '" x2="' + R + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="' + (wv === 0 ? '1.1' : '0.6') + '" stroke-dasharray="' + (wv === 0 ? '' : '3 3') + '"/>';
+        out += '<text x="' + (L - 4) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="end" font-size="8.5" fill="var(--muted)">' + (wv === 0 ? '0W' : (wv / 1000).toFixed(wv % 1000 ? 1 : 0) + 'kW') + '</text>';
+        out += '<text x="' + (R + 4) + '" y="' + (y + 3).toFixed(1) + '" text-anchor="start" font-size="8.5" fill="var(--muted)">' + socLab + '%</text>';
+      });
+
+      const ticks = 4;
+      for (let i = 0; i <= ticks; i++) {
+        const tt = tMin + ((tMax - tMin) * i) / ticks;
+        const xx = xOf(tt);
+        out += '<text x="' + xx.toFixed(1) + '" y="' + (B + 14) + '" text-anchor="middle" font-size="8.5" fill="var(--muted)">' + fmtHM(tt) + '</text>';
+      }
+
+      SERIES.forEach((s) => {
+        if (hidden[s.k]) return;
+        const d = pts.map((p, i) => (i ? 'L' : 'M') + xOf(p.t).toFixed(1) + ' ' + (s.k === 'soc' ? yS(p.soc) : yW(p[s.k])).toFixed(1)).join(' ');
+        out += '<path d="' + d + '" fill="none" stroke="' + s.c + '" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>';
+      });
+
+      if (hoverIdx >= 0 && hoverIdx < pts.length) {
+        const hp = pts[hoverIdx], hx = xOf(hp.t).toFixed(1);
+        out += '<line x1="' + hx + '" y1="' + T + '" x2="' + hx + '" y2="' + B + '" stroke="var(--ink)" stroke-width="0.9" stroke-dasharray="2 2"/>';
+        SERIES.forEach((s) => {
+          if (hidden[s.k]) return;
+          const hy = (s.k === 'soc' ? yS(hp.soc) : yW(hp[s.k])).toFixed(1);
+          out += '<circle cx="' + hx + '" cy="' + hy + '" r="3" fill="' + s.c + '" stroke="var(--surface)" stroke-width="1"/>';
+        });
+      }
+
+      svg.innerHTML = out;
+      if (infoEl) infoEl.textContent = pts.length + ' mẫu · Cập nhật ' + fmtHM(pts[pts.length - 1].t);
+    }
+
+    function showTip(clientX) {
+      const svg = document.getElementById('rt-svg'), tip = document.getElementById('rt-tip');
+      if (!svg || !tip || !pts.length) return;
+      const rect = svg.getBoundingClientRect();
+      const vx = ((clientX - rect.left) / rect.width) * 360;
+      const ratio = Math.max(0, Math.min(1, (vx - 40) / 290));
+      const tTarget = pts[0].t + ratio * Math.max(60, pts[pts.length - 1].t - pts[0].t);
+      let best = 0, bestD = Infinity;
+      pts.forEach((p, i) => { const df = Math.abs(p.t - tTarget); if (df < bestD) { bestD = df; best = i; } });
+      hoverIdx = best;
+      const p = pts[best];
+      tip.innerHTML = '<b>' + fmtHM(p.t) + '</b><br>' +
+        SERIES.filter((s) => !hidden[s.k]).map((s) => '<span style="color:' + s.c + '">●</span> ' + s.name + ': <b>' + p[s.k] + ' ' + s.u + '</b>').join('<br>');
+      tip.hidden = false;
+      tip.style.left = (ratio > 0.55 ? '8px' : 'auto');
+      tip.style.right = (ratio > 0.55 ? 'auto' : '8px');
+      render();
+    }
+
+    function hideTip() {
+      hoverIdx = -1;
+      const tip = document.getElementById('rt-tip');
+      if (tip) tip.hidden = true;
+      render();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const leg = document.getElementById('rt-leg');
+      if (leg) leg.addEventListener('click', (e) => {
+        const b = e.target.closest('button[data-k]');
+        if (!b) return;
+        const k = b.dataset.k;
+        hidden[k] = !hidden[k];
+        b.classList.toggle('off', !!hidden[k]);
+        render();
+      });
+      const wrap = document.getElementById('rt-wrap');
+      if (wrap) {
+        wrap.addEventListener('pointermove', (e) => showTip(e.clientX));
+        wrap.addEventListener('pointerdown', (e) => showTip(e.clientX));
+        wrap.addEventListener('pointerleave', hideTip);
+      }
+      load(todayKey());
+      render();
+    });
+
+    return { push, render, clear };
+  })();
+
   let started = false;
   function startApp() {
     if (started) return;
@@ -1567,6 +1781,7 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
         pv1Full: pvFull(1), pv2Full: pvFull(2), pv3Full: pvFull(3),
         lnm: isEps ? 'Backup Power(EPS)' : 'Tiêu thụ'
       });
+      try { RTChart.push({ ts: data.ts, pv, load, soc, charge, discharge, gridIn, gridOut }); } catch (e) {}
 
       $('iv-prio').textContent = data.SetSrcPrio == null ? '--' : (PRIO_NAMES[data.SetSrcPrio] || ('Không rõ (' + data.SetSrcPrio + ')'));   // Source Priority (holding reg 145)
       try { invSync(data); } catch (e) {}
