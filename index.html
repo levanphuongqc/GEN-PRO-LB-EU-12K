@@ -297,12 +297,25 @@ nav .bar-nav{gap:2px;padding:3px;border-radius:16px;max-width:min(100%,440px);bo
 .hr{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .hr2{display:flex;align-items:center;gap:6px}
 button.chip{border:0;cursor:pointer;color:var(--ink);font-family:inherit}
-.wf{width:16px;height:12px;flex:none}
-.wf rect{fill:var(--line);transition:fill .3s}
-.wf rect.on{fill:var(--bat)}
-#wifi.md .wf rect.on{fill:var(--pv)}
-#wifi.wk .wf rect.on{fill:var(--load)}
+.wf{width:22px;height:18px;flex:none;overflow:visible}
+.wf .a{fill:none;stroke:var(--line);stroke-width:2.2;stroke-linecap:round;transition:stroke .3s}
+.wf .d{fill:var(--line);transition:fill .3s}
+.wf .on{stroke:var(--bat)}
+.wf .d.on{fill:var(--bat);stroke:none}
+#wifi{padding-left:clamp(9px,2.6vw,11px);padding-right:clamp(9px,2.6vw,11px)}
+#wifi.md .wf .on{stroke:var(--pv)}
+#wifi.md .wf .d.on{fill:var(--pv)}
+#wifi.wk .wf .on{stroke:var(--load)}
+#wifi.wk .wf .d.on{fill:var(--load)}
 #wifi.no{color:var(--muted)}
+/* sóng khá: vòng cung đang sáng nhấp nhô chậm; sóng yếu: nhấp nhô nhanh; mất sóng: 3 vòng cung chớp lần lượt */
+@keyframes wfpulse{0%,100%{opacity:1}50%{opacity:.25}}
+@keyframes wfsweep{0%,100%{opacity:.2}50%{opacity:1}}
+#wifi.md .wf .a.on{animation:wfpulse 2s ease-in-out infinite}
+#wifi.wk .wf .a.on{animation:wfpulse .9s ease-in-out infinite}
+#wifi.no .wf .a{animation:wfsweep 1.4s ease-in-out infinite}
+.wf .a:nth-of-type(2){animation-delay:.2s!important}
+.wf .a:nth-of-type(3){animation-delay:.4s!important}
 #snd-btn{padding-left:9px;padding-right:9px}
 #snd-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 #snd-btn .s-on{display:none}
@@ -582,7 +595,7 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
       <p>Lux GEN PRO-LB-EU 12K</p>
     </div>
     <div class="hr"><div class="hr1"><div class="zoom-ctl" role="group" aria-label="Phóng to thu nhỏ giao diện"><button type="button" onclick="ZM.step(-1)" aria-label="Thu nhỏ" title="Thu nhỏ (−1%)">−</button><button type="button" class="z-val" id="zm-val" onclick="ZM.reset()" title="Bấm để đặt lại 100%">100%</button><button type="button" onclick="ZM.step(1)" aria-label="Phóng to" title="Phóng to (+1%)">+</button></div><div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div></div>
-<div class="hr2"><div class="chip no" id="wifi" title="Sóng WiFi của mạch"><svg class="wf" viewBox="0 0 16 12" aria-hidden="true"><rect x="0" y="9" width="3" height="3" rx=".6"/><rect x="4" y="6" width="3" height="6" rx=".6"/><rect x="8" y="3" width="3" height="9" rx=".6"/><rect x="12" y="0" width="3" height="12" rx=".6"/></svg><span id="wifi-t">WiFi --</span></div>
+<div class="hr2"><div class="chip no" id="wifi" title="Sóng WiFi của mạch"><svg class="wf" viewBox="0 0 24 20" aria-hidden="true"><path class="a" d="M8.46 13.46A5 5 0 0 1 15.54 13.46"/><path class="a" d="M5.28 10.28A9.5 9.5 0 0 1 18.72 10.28"/><path class="a" d="M2.1 7.1A14 14 0 0 1 21.9 7.1"/><circle class="d" cx="12" cy="17" r="1.9"/></svg></div>
 <button type="button" class="chip" id="snd-btn" onclick="LX.toggle()" aria-label="Bật/tắt âm thanh trên trang web" aria-pressed="false" title="Bật/tắt âm thanh trên trang web này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="s-off" d="M17 9l5 6M22 9l-5 6"/></svg></button><input type="range" id="snd-vol" min="0" max="100" step="5" value="70" aria-label="Âm lượng âm thanh trên web" title="Âm lượng âm thanh trên web" oninput="LX.vol(this.value)"></div></div>
   </header>
 
@@ -916,10 +929,9 @@ test:function(){up(880,1175);say('Âm thanh trên web đã bật',420);}};
 function play(id){if(on&&SND[id])SND[id]();}
 function paint(){var b=el('snd-btn');if(!b)return;var r=el('snd-vol');if(r)r.value=VOL;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');}
 function toggle(){on=!on;try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}paint();if(on){ac();SND.test();}else{try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}}}
-function wifi(r){var c=el('wifi');if(!c)return;r=Number(r);var ok=isFinite(r)&&r<0,lv=!ok?0:(r>=-55?4:(r>=-65?3:(r>=-75?2:1)));
-var rs=c.querySelectorAll('rect');for(var i=0;i<rs.length;i++)rs[i].setAttribute('class',i<lv?'on':'');
-c.className='chip '+(!ok?'no':(lv>=3?'':(lv===2?'md':'wk')));
-el('wifi-t').textContent=!ok?'Mất WiFi':((r>=-60?'Mạnh':(r>=-75?'Khá':'Yếu'))+' · '+Math.round(r)+' dBm');
+function wifi(r){var c=el('wifi');if(!c)return;r=Number(r);var ok=isFinite(r)&&r<0,n=!ok?0:(r>=-60?3:(r>=-72?2:(r>=-82?1:0)));
+var as=c.querySelectorAll('.a'),d=c.querySelector('.d'),i;for(i=0;i<as.length;i++)as[i].setAttribute('class',i<n?'a on':'a');if(d)d.setAttribute('class',ok?'d on':'d');
+c.className='chip '+(!ok?'no':(n>=3?'':(n===2?'md':'wk')));
 c.title=!ok?'Mạch chưa có WiFi':('Sóng WiFi của mạch: '+Math.round(r)+' dBm');}
 function feed(p){
 for(var k in p){var v=p[k];if(v===undefined||v===null||(typeof v==='number'&&isNaN(v)))continue;var o=S[k];S[k]=v;if(o===undefined)continue;
