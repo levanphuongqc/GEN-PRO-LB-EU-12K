@@ -975,8 +975,10 @@ for(var k in p){var v=p[k];if(v===undefined||v===null||(typeof v==='number'&&isN
 if(k==='b1'||k==='b2'){if(v!==o)play('bn'+k.charAt(1)+(v?'on':'off'));}
 else if(k==='auto'){if(v!==o)play(v?'autoon':'autooff');}
 else if(k==='err'){if(v&&!o)play('err');}}
-if(p.soc!==undefined&&p.soc!==null&&S.soc!==undefined){var s=S.soc,lw=S.low||25,now=Date.now();
+if(S.soc!==undefined&&S.low!==undefined){var s=S.soc,lw=S.low,now=Date.now();
 if(s<=lw){if(armLow||now-lastLow>1800000){armLow=false;lastLow=now;play('low');}}else if(s>=lw+10)armLow=true;
+}
+if(p.soc!==undefined&&p.soc!==null&&S.soc!==undefined){var s=S.soc;
 if(s>=100&&armFull){armFull=false;play('full');}else if(s<=95)armFull=true;}
 if(p.rssi!==undefined&&p.rssi!==null){var r=Number(p.rssi),n2=Date.now();
 if(isFinite(r)&&r<0){if(r<=-80){if(armWifi||n2-lastWifi>1800000){armWifi=false;lastWifi=n2;play('wifi');}}else if(r>-72)armWifi=true;}}}
