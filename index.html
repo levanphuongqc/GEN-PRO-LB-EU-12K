@@ -726,16 +726,9 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
       <div class="field"><label for="auto_on_h">Tự động bật Auto lúc</label><div class="num"><input type="number" inputmode="numeric" id="auto_on_h"><em>giờ</em></div></div>
       <div class="field"><label for="auto_off_h">Tự động tắt Auto lúc</label><div class="num"><input type="number" inputmode="numeric" id="auto_off_h"><em>giờ</em></div></div>
       <div class="row">
-        <div class="row">
         <div><div class="t">Chế độ mùa hè</div><div class="d">Hẹn giờ Auto vẫn chạy, nhưng khóa tự động bật/tắt bình</div></div>
         <label class="switch"><input type="checkbox" id="summer_mode" aria-label="Chế độ mùa hè"><span></span></label>
       </div>
-    </div>
-
-    <div class="group">
-      <h3 style="--c:var(--bat)">Đồng bộ công tắc Tuya</h3>
-      <div class="field"><label for="load_jump">Đồng bộ Tuya khi tải đổi ≥</label><div class="num"><input type="number" inputmode="numeric" min="200" max="5000" id="load_jump"><em>W</em></div></div>
-      <p class="hint">Khi tải thay đổi đột ngột vượt mức này (bấm công tắc tay / app Tuya), mạch sẽ đồng bộ trạng thái công tắc ngay. Giới hạn 200–5000 W.</p>
     </div>
 
     <div class="group">
@@ -1852,7 +1845,6 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       const set = (id, v) => { const el = document.getElementById(id); if (v !== undefined && el !== ae) el.value = v; };
       try { LX.feed({ low: parseInt(data.lowsoc) }); } catch (e) {}
       set('auto_on_h', data.onH); set('auto_off_h', data.offH);
-      set('load_jump', data.ljump);
       set('b1_on', data.b1on); set('b1_off', data.b1off); set('b1_soc', data.b1soc);
       set('b2_on', data.b2on); set('b2_off', data.b2off); set('b2_soc', data.b2soc);
       document.getElementById('summer_mode').checked = parseInt(data.summer) === 1;
@@ -1975,7 +1967,6 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       b2off: nv('b2_off', 0, 0, 20000),
       b2soc: nv('b2_soc', 0, 0, 100),
       summer: document.getElementById('summer_mode').checked ? 1 : 0,
-      ljump: nv('load_jump', 800, 200, 5000),
       prio: document.getElementById('prio').value === '2' ? 2 : 1,
       ...sch
     };
