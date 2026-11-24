@@ -606,9 +606,9 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
 <div class="app">
   <header>
     <div class="brand">
-      <h1>Lê Văn Phương</h1>
-      <p>Lux GEN PRO-LB-EU 12K</p>
-    </div>
+    <h1 id="brand-name">Lê Văn Phương</h1>
+    <p>Lux GEN PRO-LB-EU 12K</p>
+  </div>
     <div class="hr"><div class="hr1"><div class="zoom-ctl" role="group" aria-label="Phóng to thu nhỏ giao diện"><button type="button" onclick="ZM.step(-1)" aria-label="Thu nhỏ" title="Thu nhỏ (−1%)">−</button><button type="button" class="z-val" id="zm-val" onclick="ZM.reset()" title="Bấm để đặt lại 100%">100%</button><button type="button" onclick="ZM.step(1)" aria-label="Phóng to" title="Phóng to (+1%)">+</button></div><div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div></div>
 <div class="hr2"><div class="chip no" id="wifi" title="Sóng WiFi của mạch"><svg class="wf" viewBox="0 0 24 20" aria-hidden="true"><path class="a" d="M8.46 13.46A5 5 0 0 1 15.54 13.46"/><path class="a" d="M5.28 10.28A9.5 9.5 0 0 1 18.72 10.28"/><path class="a" d="M2.1 7.1A14 14 0 0 1 21.9 7.1"/><circle class="d" cx="12" cy="17" r="1.9"/></svg></div>
 <button type="button" class="chip" id="snd-btn" onclick="LX.toggle()" aria-label="Bật/tắt âm thanh trên trang web" aria-pressed="false" title="Bật/tắt âm thanh trên trang web này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="s-off" d="M17 9l5 6M22 9l-5 6"/></svg></button><input type="range" id="snd-vol" min="0" max="100" step="5" value="70" aria-label="Âm lượng âm thanh trên web" title="Âm lượng âm thanh trên web" oninput="LX.vol(this.value)"></div></div>
@@ -2145,9 +2145,10 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
   }
 
   function enterUI() {
-    if (!me) return;
-    $id('acc_cur').textContent = me.name + ' (' + loginLabel(me.email) + ')';
-    $id('acc_role').textContent = me.role === 'admin' ? 'Quản trị viên (xem tất cả)' : 'Người dùng';
+  if (!me) return;
+  if ($id('brand-name')) $id('brand-name').textContent = me.name || loginLabel(me.email);
+  $id('acc_cur').textContent = me.name + ' (' + loginLabel(me.email) + ')';
+  $id('acc_role').textContent = me.role === 'admin' ? 'Quản trị viên (xem tất cả)' : 'Người dùng';
     document.body.classList.remove('locked', 'checking');
     if (uiEnteredUid !== me.uid) {
       uiEnteredUid = me.uid;
