@@ -1601,6 +1601,35 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
     E('st-sum').textContent = SN[mi] + ' ' + (byDay ? 'tháng ' + M + '/' + Y : 'năm ' + Y) + ': ' + vals.reduce((a, b) => a + b, 0).toFixed(1) + ' kWh';
   }
 
+  // ===== /History: chỉ nghe HIST_LIVE_DAYS ngày gần nhất; các ngày cũ đọc 1 lần rồi nhớ trong máy =====
+  // - Luồng trực tiếp: orderByKey().limitToLast(7) -> chỉ 7 ngày gần nhất được đẩy về mỗi khi mạch cập nhật.
+  // - Các ngày cũ (không còn đổi) lưu ở localStorage; lần mở sau chỉ tải thêm phần mới (startAt ngày cuối đã lưu),
+  //   nên "Tháng này / Năm nay / biểu đồ năm / xuất CSV" vẫn đủ số liệu mà không phải tải lại nhiều năm lịch sử.
+  const HIST_LIVE_DAYS = 7, HIST_CACHE = 'lx_hist_cache_v1';
+  let histLive = {}, histOld = {}, histStarted = false;
+  function histMerge() { hist = Object.assign({}, histOld, histLive); statRender(); pvDayRender(); }
+  function histSaveCache() {
+    try {
+      const n = new Date(Date.now() - 2 * 86400000), lim = '' + n.getFullYear() + p2(n.getMonth() + 1) + p2(n.getDate()), keep = {};
+      for (const k in histOld) if (k <= lim) keep[k] = histOld[k];     // chỉ lưu ngày đã chốt (trước hôm kia)
+      localStorage.setItem(HIST_CACHE, JSON.stringify(keep));
+    } catch (e) {}
+  }
+  function histStart() {
+    if (histStarted || !can('thongke')) return;
+    histStarted = true;
+    try { histOld = JSON.parse(localStorage.getItem(HIST_CACHE) || '{}') || {}; } catch (e) { histOld = {}; }
+    const last = Object.keys(histOld).sort().pop();
+    let q = database.ref('/History').orderByKey();
+    if (last) q = q.startAt(last);                                       // đã có cache: chỉ xin phần mới hơn
+    q.once('value').then((sn) => { Object.assign(histOld, sn.val() || {}); histSaveCache(); histMerge(); })
+      .catch((e) => console.warn('Không đọc được lịch sử cũ: ' + (e && e.code)));
+    histMerge();
+    database.ref('/History').orderByKey().limitToLast(HIST_LIVE_DAYS).on('value',
+      (sn) => { histLive = sn.val() || {}; histMerge(); },
+      (e) => console.warn('Không đọc được /History: ' + (e && e.code)));
+  }
+
   // Chỉ nghe dữ liệu mà tài khoản được phép xem (Rules của Firebase cũng chặn ở phía máy chủ)
   // Luồng /Inverter cập nhật mỗi 2 giây: tab bị ẩn quá 60 giây thì ngắt nghe cho đỡ tốn pin/băng thông, hiện lại thì nghe tiếp.
   // Không ngắt khi đang bật âm thanh cảnh báo hoặc đang mở cửa sổ nổi (PiP).
@@ -1807,7 +1836,7 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
   function startApp() {
     if (started) return;
     started = true;
-    onIf(['thongke'], '/History', (sn) => { hist = sn.val() || {}; statRender(); pvDayRender(); });
+    histStart();
     onIf(['thongke'], '/Totals', (sn) => { tot = sn.val(); statRender(); });
     // Dữ liệu Inverter
     onIf(['sodo', 'bientan', 'hethong'], '/Inverter', (snapshot) => {
