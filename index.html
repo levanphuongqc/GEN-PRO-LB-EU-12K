@@ -324,6 +324,11 @@ button.chip{border:0;cursor:pointer;color:var(--ink);font-family:inherit}
 #snd-btn.on .s-off{display:none}
 #snd-vol{display:none;width:72px;height:24px;margin:0;accent-color:var(--bat)}
 #snd-btn.on~#snd-vol{display:block}
+#snd-btn .s-hint{display:none;font-size:11.5px;margin-left:6px}
+#snd-btn.wait{background:var(--pv);color:#fff;animation:sndwait 1.4s ease-in-out infinite}
+#snd-btn.wait .s-hint{display:inline}
+#snd-btn.wait~#snd-vol{display:none}
+@keyframes sndwait{50%{opacity:.65}}
 
 /* ===== CO GIÃN MỌI MÀN HÌNH ===== */
 html,body{overflow-x:clip}
@@ -613,7 +618,7 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
   </div>
     <div class="hr"><div class="hr1"><div class="zoom-ctl" role="group" aria-label="Phóng to thu nhỏ giao diện"><button type="button" onclick="ZM.step(-1)" aria-label="Thu nhỏ" title="Thu nhỏ (−1%)">−</button><button type="button" class="z-val" id="zm-val" onclick="ZM.reset()" title="Bấm để đặt lại 100%">100%</button><button type="button" onclick="ZM.step(1)" aria-label="Phóng to" title="Phóng to (+1%)">+</button></div><div class="chip" id="chip"><i></i><span id="chip-t">Đang kết nối</span></div></div>
 <div class="hr2"><div class="chip no" id="wifi" title="Sóng WiFi của mạch"><svg class="wf" viewBox="0 0 24 20" aria-hidden="true"><path class="a" d="M8.46 13.46A5 5 0 0 1 15.54 13.46"/><path class="a" d="M5.28 10.28A9.5 9.5 0 0 1 18.72 10.28"/><path class="a" d="M2.1 7.1A14 14 0 0 1 21.9 7.1"/><circle class="d" cx="12" cy="17" r="1.9"/></svg></div>
-<button type="button" class="chip" id="snd-btn" onclick="LX.toggle()" aria-label="Bật/tắt âm thanh trên trang web" aria-pressed="false" title="Bật/tắt âm thanh trên trang web này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="s-off" d="M17 9l5 6M22 9l-5 6"/></svg></button><input type="range" id="snd-vol" min="0" max="100" step="5" value="70" aria-label="Âm lượng âm thanh trên web" title="Âm lượng âm thanh trên web" oninput="LX.vol(this.value)"></div></div>
+<button type="button" class="chip" id="snd-btn" onclick="LX.toggle()" aria-label="Bật/tắt âm thanh trên trang web" aria-pressed="false" title="Bật/tắt âm thanh trên trang web này"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path class="s-on" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/><path class="s-off" d="M17 9l5 6M22 9l-5 6"/></svg><span class="s-hint">Chạm để bật âm thanh</span></button><input type="range" id="snd-vol" min="0" max="100" step="5" value="70" aria-label="Âm lượng âm thanh trên web" title="Âm lượng âm thanh trên web" oninput="LX.vol(this.value)"></div></div>
   </header>
 
   <!-- THANH TAB CON CỦA CÀI ĐẶT (chỉ hiện khi đang ở Cài đặt) -->
@@ -965,7 +970,7 @@ var LX=(function(){
 var KEY='lx_web_snd',VK='lx_web_vol',VOL=70,on=false,ctx=null,S={},armLow=true,armFull=true,armWifi=true,lostSaid=false,lastLow=0,lastWifi=0;
 try{on=localStorage.getItem(KEY)==='1';var sv=parseInt(localStorage.getItem(VK));if(sv>=0&&sv<=100)VOL=sv;}catch(e){}
 function el(i){return document.getElementById(i);}
-function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}}if(ctx.state!=='running')ctx.resume();return ctx;}catch(e){return null;}}
+function ac(){try{if(!ctx){var C=window.AudioContext||window.webkitAudioContext;if(!C)return null;ctx=new C();try{ctx.onstatechange=paint;}catch(e){}try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}}if(ctx.state!=='running'){try{var rp=ctx.resume();if(rp&&rp.then)rp.then(paint,paint);}catch(e){}}return ctx;}catch(e){return null;}}
 function tone(f,t0,d,v){var c=ac();if(!c)return;var o=c.createOscillator(),g=c.createGain(),s=c.currentTime+t0;o.type='sine';o.frequency.value=f;
 g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(Math.max(0.0002,(v||0.3)*(VOL/100)*(VOL/100)),s+0.015);g.gain.exponentialRampToValueAtTime(0.0001,s+d);
 o.connect(g);g.connect(c.destination);o.start(s);o.stop(s+d+0.03);}
@@ -987,8 +992,9 @@ wifi:function(){beeps(2,700);say('Sóng WiFi của mạch yếu',600);},
 lost:function(){beeps(2,440);say('Mất kết nối với mạch',600);},
 test:function(){up(880,1175);say('Âm thanh trên web đã bật',420);}};
 function play(id){if(on&&SND[id])SND[id]();}
-function paint(){var b=el('snd-btn');if(!b)return;var r=el('snd-vol');if(r)r.value=VOL;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on?'true':'false');}
-function toggle(){on=!on;try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}paint();if(on){ac();SND.test();}else{try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}}}
+function pending(){return on&&(!ctx||ctx.state!=='running');}
+function paint(){var b=el('snd-btn');if(!b)return;var r=el('snd-vol');if(r)r.value=VOL;var w=pending();b.classList.toggle('on',on);b.classList.toggle('wait',w);b.setAttribute('aria-pressed',on?'true':'false');b.title=w?'Trình duyệt đang chặn âm thanh - chạm để bật':'Bật/tắt âm thanh trên trang web này';}
+function toggle(){if(pending()){ac();SND.test();paint();return;}on=!on;try{localStorage.setItem(KEY,on?'1':'0');}catch(e){}paint();if(on){ac();SND.test();}else{try{window.speechSynthesis&&window.speechSynthesis.cancel();}catch(e){}}}
 function wifi(r){var c=el('wifi');if(!c)return;r=Number(r);var ok=isFinite(r)&&r<0,n=!ok?0:(r>=-60?3:(r>=-72?2:(r>=-82?1:0)));
 var as=c.querySelectorAll('.a'),d=c.querySelector('.d'),i;for(i=0;i<as.length;i++)as[i].setAttribute('class',i<n?'a on':'a');if(d)d.setAttribute('class',ok?'d on':'d');
 c.className='chip '+(!ok?'no':(n>=3?'':(n===2?'md':'wk')));
@@ -1009,9 +1015,10 @@ function vol(v){VOL=Math.max(0,Math.min(100,parseInt(v)||0));try{localStorage.se
 function vtest(){}
 function lost(){if(lostSaid)return;lostSaid=true;play('lost');}
 function ok(){lostSaid=false;}
-function unlock(){if(!on)return;ac();try{var q=window.speechSynthesis;if(q&&!unlock.s){unlock.s=1;var u=new SpeechSynthesisUtterance(' ');u.volume=0;q.speak(u);}}catch(e){}}
-['pointerdown','touchstart','touchend','click','keydown'].forEach(function(e){document.addEventListener(e,unlock,{passive:true,capture:true});});
-document.addEventListener('visibilitychange',function(){if(!document.hidden&&ctx&&ctx.state!=='running')ac();});
+function unlock(ev){ac();paint();var t=ev&&ev.type;if(t!=='click'&&t!=='touchend'&&t!=='keydown'&&t!=='pointerup')return;try{var q=window.speechSynthesis;if(q&&!unlock.s){unlock.s=1;var u=new SpeechSynthesisUtterance(' ');u.volume=0;q.speak(u);}}catch(e){}}
+['pointerdown','pointerup','touchstart','touchend','click','keydown'].forEach(function(e){document.addEventListener(e,unlock,{passive:true,capture:true});});
+document.addEventListener('visibilitychange',function(){if(!document.hidden&&ctx&&ctx.state!=='running'){ac();paint();}});
+if(on)ac();
 paint();
 return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok,isOn:function(){return on;}};})();
 </script>
