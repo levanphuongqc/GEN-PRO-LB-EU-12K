@@ -1550,12 +1550,17 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
   // ===== THU GỌN / MỞ THANH ĐIỀU HƯỚNG (PA 4) =====
   const NAV = (function () {
     const KEY = 'lx_nav_min';
-    let min = false;
-    try { min = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    const isMob = window.matchMedia('(max-width: 719px)').matches;
+    let min = isMob;
+    if (!isMob) {
+      try { min = localStorage.getItem(KEY) === '1'; } catch (e) {}
+    }
     function apply() { document.body.classList.toggle('nav-min', min); }
     function toggle() {
       min = !min;
-      try { localStorage.setItem(KEY, min ? '1' : '0'); } catch (e) {}
+      if (!isMob) {
+        try { localStorage.setItem(KEY, min ? '1' : '0'); } catch (e) {}
+      }
       apply();
     }
     document.addEventListener('DOMContentLoaded', apply);
