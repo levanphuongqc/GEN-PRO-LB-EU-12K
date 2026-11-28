@@ -899,7 +899,22 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
   </section>
   <section id="tab6" class="panel">
     <div class="group"><h3>Cài đặt biến tần</h3>
-      <div class="ivf"><div class="ivl"><div class="t">Battery Warning SOC</div><div class="d">Hiện tại: <b id="iv-wsoc">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.w=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">On-Grid Cut-Off SOC (%)</div><div class="d">Hiện tại: <b id="iv-ongrid">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-ongrid" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.g=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">Off-Grid Cut-Off SOC (%)</div><div class="d">Hiện tại: <b id="iv-offgrid">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-offgrid" min="0" max="90" step="1" inputmode="numeric" placeholder="0–90 %" oninput="invDirty.o=true"></div></div></div><div class="ivf"><div class="ivl"><div class="t">Ưu tiên sạc PV</div><div class="d">Hiện tại: <b id="iv-pvchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-pvchg" onchange="invDirty.c=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Battery Warning SOC</div><div class="d">Hiện tại: <b id="iv-wsoc">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-wsoc" min="0" max="90" inputmode="numeric" oninput="invDirty.w=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">On-Grid Cut-Off SOC (%)</div><div class="d">Hiện tại: <b id="iv-ongrid">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-ongrid" min="0" max="90" inputmode="numeric" oninput="invDirty.g=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Off-Grid Cut-Off SOC (%)</div><div class="d">Hiện tại: <b id="iv-offgrid">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-offgrid" min="0" max="90" inputmode="numeric" oninput="invDirty.o=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Ưu tiên sạc PV</div><div class="d">Hiện tại: <b id="iv-pvchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-pvchg" onchange="invDirty.c=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Bán điện lên lưới</div><div class="d">Hiện tại: <b id="iv-feedin">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-feedin" onchange="invDirty.f=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Công suất sạc pin tối đa</div><div class="d">Hiện tại: <b id="iv-chgpw">-- kW</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-chgpw" min="0" max="12" step="0.1" inputmode="decimal" oninput="invDirty.cp=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Công suất xả pin tối đa</div><div class="d">Hiện tại: <b id="iv-dispw">-- kW</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-dispw" min="0" max="12" step="0.1" inputmode="decimal" oninput="invDirty.dp=true"></div></div></div>
+    </div>
+    <div class="group"><h3 style="--c:var(--grid)">Sạc AC từ lưới</h3>
+      <div class="ivf"><div class="ivl"><div class="t">Bật/Tắt Sạc AC</div><div class="d">Hiện tại: <b id="iv-acchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-acchg" onchange="invDirty.ac=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Công suất sạc AC</div><div class="d">Hiện tại: <b id="iv-acpw">-- kW</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acpw" min="0" max="12" step="0.1" inputmode="decimal" oninput="invDirty.ap=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">SOC dừng sạc AC (theo giờ)</div><div class="d">Hiện tại: <b id="iv-acend">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acend" min="0" max="100" inputmode="numeric" oninput="invDirty.ae=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">SOC bắt đầu sạc AC</div><div class="d">Hiện tại: <b id="iv-acstart">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acstart" min="0" max="90" inputmode="numeric" oninput="invDirty.as=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">SOC dừng sạc AC (theo SOC)</div><div class="d">Hiện tại: <b id="iv-acstop">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acstop" min="0" max="100" inputmode="numeric" oninput="invDirty.at=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Khung giờ sạc AC 1 (Bắt đầu)</div><div class="d">Hiện tại: <b id="iv-acst1">--:--</b></div></div><div class="ivc"><div class="txt"><input type="time" id="iv-in-acst1" oninput="invDirty.s1=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">Khung giờ sạc AC 1 (Kết thúc)</div><div class="d">Hiện tại: <b id="iv-aced1">--:--</b></div></div><div class="ivc"><div class="txt"><input type="time" id="iv-in-aced1" oninput="invDirty.e1=true"></div></div></div>
       <p class="hint" id="iv-hint" style="margin-top:8px"></p>
       <button type="button" class="btn-save" id="iv-apply" onclick="invApply()">Ghi lên biến tần</button>
       <p class="sync" id="iv-status"></p>
@@ -1081,24 +1096,33 @@ return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok,isOn:function(
     h3.addEventListener('click', () => h3.parentElement.classList.toggle('fold'));
     if (/^Hẹn giờ/.test(h3.textContent)) h3.parentElement.classList.add('fold');
   });
-  const invDirty = { w: false, c: false, g: false, o: false };
-const invCur = { w: null, r: null, c: null, g: null, o: null };
+  const invDirty = { w:false, c:false, g:false, o:false, ac:false, f:false, cp:false, dp:false, ap:false, ae:false, s1:false, e1:false, as:false, at:false };
+const invCur = {};
 let invWait = null;
 const invEl = (id) => document.getElementById(id);
+const hmFromReg = (v) => v == null ? '' : String(v & 255).padStart(2, '0') + ':' + String((v >> 8) & 255).padStart(2, '0');
+const regFromHm = (s) => { const m = /^(\d{1,2}):(\d{2})/.exec(s || ''); return m ? (((+m[2]) << 8) | (+m[1])) : null; };
+
 function invSync(d) {
-  invCur.w = d.SetBatWarnSoc == null ? null : +d.SetBatWarnSoc;
-  invCur.r = (d.SetBatRecSoc == null || !(+d.SetBatRecSoc > 0)) ? null : +d.SetBatRecSoc;   // 0 = biến tần không dùng mức phục hồi (hoặc giá trị cũ còn sót trên Firebase) -> bỏ qua kiểm tra
-  invCur.c = d.SetPvChg == null ? null : +d.SetPvChg;
-  if (!invDirty.c && invCur.c != null) invEl('iv-in-pvchg').value = invCur.c;
-  if (!invDirty.w && invCur.w != null) invEl('iv-in-wsoc').value = invCur.w;
-  invCur.g = d.SetOnGridSoc == null ? null : +d.SetOnGridSoc;
-  invCur.o = d.SetOffGridSoc == null ? null : +d.SetOffGridSoc;
-  if (!invDirty.g && invCur.g != null) invEl('iv-in-ongrid').value = invCur.g;
-  if (!invDirty.o && invCur.o != null) invEl('iv-in-offgrid').value = invCur.o;
-  invEl('iv-hint').textContent = 'Cho phép 0–90%' + (invCur.r != null ? ', phải nhỏ hơn mức phục hồi ' + invCur.r + '%' : '') + '.';
+  const num = (v) => v == null ? null : +v;
+  Object.assign(invCur, {
+    w: num(d.SetBatWarnSoc), r: (d.SetBatRecSoc == null || !(+d.SetBatRecSoc > 0)) ? null : +d.SetBatRecSoc,
+    c: num(d.SetPvChg), g: num(d.SetOnGridSoc), o: num(d.SetOffGridSoc),
+    ac: num(d.SetAcChg), f: num(d.SetFeedIn), cp: num(d.SetChgPw), dp: num(d.SetDisPw),
+    ap: num(d.SetAcPw), ae: num(d.SetAcEnd), s1: num(d.SetAcSt1), e1: num(d.SetAcEd1),
+    as: num(d.SetAcStart), at: num(d.SetAcStop)
+  });
+  [['w','wsoc'],['c','pvchg'],['g','ongrid'],['o','offgrid'],['ac','acchg'],['f','feedin'],['ae','acend'],['as','acstart'],['at','acstop']]
+  .forEach(([ck, id]) => { if (!invDirty[ck] && invCur[ck] != null) invEl('iv-in-' + id).value = invCur[ck]; });
+  [['cp','chgpw'],['dp','dispw'],['ap','acpw']]
+  .forEach(([ck, id]) => { if (!invDirty[ck] && invCur[ck] != null) invEl('iv-in-' + id).value = (invCur[ck] / 10).toFixed(1); });
+  if (!invDirty.s1 && invCur.s1 != null) invEl('iv-in-acst1').value = hmFromReg(invCur.s1);
+  if (!invDirty.e1 && invCur.e1 != null) invEl('iv-in-aced1').value = hmFromReg(invCur.e1);
+  invEl('iv-hint').textContent = 'Warning SOC: 0–90%' + (invCur.r != null ? ', phải nhỏ hơn mức phục hồi ' + invCur.r + '%' : '') + '.';
   if (invWait && d.SetResId === invWait.id) { const w = invWait; invWait = null; w.done({ ok: !!d.SetResOk, msg: d.SetResMsg || '' }); }
 }
-function invSend(k, v) {   // gửi lệnh qua Firebase /Controls/InvSet, chờ mạch phản hồi qua /Inverter/SetRes*
+
+function invSend(k, v) {
   return new Promise((resolve) => {
     const id = Date.now() % 1000000000;
     const t = setTimeout(() => { if (invWait && invWait.id === id) { invWait = null; resolve({ ok: false, msg: 'Hết thời gian chờ, mạch chưa phản hồi' }); } }, 45000);
@@ -1106,36 +1130,46 @@ function invSend(k, v) {   // gửi lệnh qua Firebase /Controls/InvSet, chờ 
     database.ref('/Controls/InvSet').set({ k, v, id }).catch(() => { clearTimeout(t); invWait = null; resolve({ ok: false, msg: 'Không gửi được lệnh, kiểm tra kết nối' }); });
   });
 }
+
 async function invApply() {
-  const btn = invEl('iv-apply'), st = invEl('iv-status');
-  const w = invEl('iv-in-wsoc').value.trim(), wn = w === '' ? NaN : Number(w);
-  if (invCur.w == null) { toast('Chưa đọc được cài đặt hiện tại từ biến tần'); return; }
-  if (!Number.isInteger(wn) || wn < 0 || wn > 90) { toast('Battery Warning SOC phải là số nguyên từ 0 đến 90'); return; }
-  if (invCur.r != null && wn >= invCur.r) { toast('Mức cảnh báo phải nhỏ hơn mức phục hồi (' + invCur.r + '%)'); return; }
-  const jobs = [];
-  if (wn !== invCur.w) jobs.push({ k: 'wsoc', v: wn, t: 'Battery Warning SOC: ' + invCur.w + '% → ' + wn + '%' });
-  const pc = +invEl('iv-in-pvchg').value;
-  if (invCur.c != null && pc !== invCur.c) jobs.push({ k: 'pvchg', v: pc, t: 'Ưu tiên sạc PV: ' + (invCur.c ? 'Bật' : 'Tắt') + ' → ' + (pc ? 'Bật' : 'Tắt') });
-  const gs = invEl('iv-in-ongrid').value.trim(), os = invEl('iv-in-offgrid').value.trim();
-  if (invCur.g != null && gs !== '') {
-    const gn = Number(gs);
-    if (!Number.isInteger(gn) || gn < 0 || gn > 90) { toast('On-Grid Cut-Off SOC phải là số nguyên từ 0 đến 90'); return; }
-    if (gn !== invCur.g) jobs.push({ k: 'ongrid', v: gn, t: 'On-Grid Cut-Off SOC: ' + invCur.g + '% → ' + gn + '%' });
-  }
-  if (invCur.o != null && os !== '') {
-    const on = Number(os);
-    if (!Number.isInteger(on) || on < 0 || on > 90) { toast('Off-Grid Cut-Off SOC phải là số nguyên từ 0 đến 90'); return; }
-    if (on !== invCur.o) jobs.push({ k: 'offgrid', v: on, t: 'Off-Grid Cut-Off SOC: ' + invCur.o + '% → ' + on + '%' });
-  }
+  const btn = invEl('iv-apply'), st = invEl('iv-status'), jobs = [];
+  const addNum = (ck, k, id, lo, hi, nm) => {
+    const s = invEl(id).value.trim(); if (invCur[ck] == null || s === '') return true;
+    const n = Number(s); if (!Number.isInteger(n) || n < lo || n > hi) { toast(nm + ' phải từ ' + lo + ' đến ' + hi); return false; }
+    if (ck === 'w' && invCur.r != null && n >= invCur.r) { toast('Mức cảnh báo phải nhỏ hơn mức phục hồi (' + invCur.r + '%)'); return false; }
+    if (n !== invCur[ck]) jobs.push({ k, v: n, t: nm + ': ' + invCur[ck] + '% → ' + n + '%' }); return true;
+  };
+  const addSel = (ck, k, id, nm) => { if (invCur[ck] == null) return; const v = +invEl(id).value; if (v !== invCur[ck]) jobs.push({ k, v, t: nm + ': ' + (invCur[ck] ? 'Bật' : 'Tắt') + ' → ' + (v ? 'Bật' : 'Tắt') }); };
+  const addTm = (ck, k, id, nm) => { if (invCur[ck] == null) return; const v = regFromHm(invEl(id).value); if (v != null && v !== invCur[ck]) jobs.push({ k, v, t: nm + ': ' + hmFromReg(invCur[ck]) + ' → ' + hmFromReg(v) }); };
+  const addKw = (ck, k, id, nm) => {
+    const s = invEl(id).value.trim(); if (invCur[ck] == null || s === '') return true;
+    const f = parseFloat(s); if (isNaN(f) || f < 0 || f > 12) { toast(nm + ' phải từ 0 đến 12,0 kW'); return false; }
+    const n = Math.round(f * 10);
+    if (n !== invCur[ck]) jobs.push({ k, v: n, t: nm + ': ' + (invCur[ck] / 10).toFixed(1) + ' kW → ' + (n / 10).toFixed(1) + ' kW' }); return true;
+  };
+  if (!addNum('w','wsoc','iv-in-wsoc',0,90,'Battery Warning SOC')) return;
+  if (!addNum('g','ongrid','iv-in-ongrid',0,90,'On-Grid Cut-Off SOC')) return;
+  if (!addNum('o','offgrid','iv-in-offgrid',0,90,'Off-Grid Cut-Off SOC')) return;
+  addSel('c','pvchg','iv-in-pvchg','Ưu tiên sạc PV');
+  addSel('f','feedin','iv-in-feedin','Bán điện lên lưới');
+  if (!addKw('cp','chgpw','iv-in-chgpw','Công suất sạc pin')) return;
+  if (!addKw('dp','dispw','iv-in-dispw','Công suất xả pin')) return;
+  addSel('ac','acchg','iv-in-acchg','Sạc AC từ lưới');
+  if (!addKw('ap','acpw','iv-in-acpw','Công suất sạc AC')) return;
+  if (!addNum('ae','acend','iv-in-acend',0,100,'SOC dừng sạc AC (giờ)')) return;
+  if (!addNum('as','acstart','iv-in-acstart',0,90,'SOC bắt đầu sạc AC')) return;
+  if (!addNum('at','acstop','iv-in-acstop',0,100,'SOC dừng sạc AC (SOC)')) return;
+  addTm('s1','acst1','iv-in-acst1','Sạc AC khung 1 bắt đầu');
+  addTm('e1','aced1','iv-in-aced1','Sạc AC khung 1 kết thúc');
   if (!jobs.length) { st.textContent = 'Không có thay đổi để ghi'; return; }
-  if (!confirm('Ghi lên biến tần?\n\n' + jobs.map((j) => j.t).join('\n') + '\n\nCài đặt được lưu trong biến tần và áp dụng ngay.')) return;
+  if (!confirm('Ghi lên biến tần?\n\n' + jobs.map((j) => j.t).join('\n'))) return;
   btn.disabled = true;
   for (const j of jobs) {
     st.textContent = 'Đang ghi: ' + j.t + ' ...';
     const r = await invSend(j.k, j.v);
     if (!r.ok) { st.textContent = 'Lỗi: ' + r.msg; toast('Không ghi được: ' + r.msg); btn.disabled = false; return; }
   }
-  invDirty.w = false; invDirty.c = false; invDirty.g = false; invDirty.o = false;
+  Object.keys(invDirty).forEach((k) => { invDirty[k] = false; });
   st.textContent = 'Đã ghi và xác nhận lúc ' + new Date().toLocaleTimeString('vi-VN');
   btn.disabled = false;
 }
@@ -1419,16 +1453,18 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       // --- HIỆU ỨNG VIỀN & NỀN KHUNG THEO KỊCH BẢN  ---
       const heroEl = byId('hero'), alEl = byId('sd-alert');
       const isLow = d.soc <= lowSocCfg;
-      const isHighPv = !d.isEps && !isLow && d.pv >= 3000;
-      const isNight = !d.isEps && !isLow && d.pv <= 10;
+      const hasFault = !!(d.faults && d.faults.indexOf('LỖI') >= 0);
+      const isHighPv = !d.isEps && !isLow && !hasFault && d.pv >= 3000;
+      const isNight = !d.isEps && !isLow && !hasFault && d.pv <= 10;
       if (heroEl) {
-        heroEl.classList.toggle('st-low', isLow);
+        heroEl.classList.toggle('st-low', isLow || hasFault);
         heroEl.classList.toggle('st-eps', d.isEps);
         heroEl.classList.toggle('st-highpv', isHighPv);
         heroEl.classList.toggle('st-night', isNight);
       }
       if (alEl) {
         const msgs = [];
+        if (d.faults) msgs.push('⚠ ' + d.faults);
         if (d.isEps) msgs.push('⚠ MẤT ĐIỆN LƯỚI · ĐANG CHẠY EPS');
         if (isLow) msgs.push('🔋 PIN YẾU (' + d.soc + '%)');
         alEl.hidden = !msgs.length;
@@ -1907,7 +1943,8 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
         t2Num: typeof data.TempRad2 === 'number' ? data.TempRad2 : 35,
         pv1: pvShort(1), pv2: pvShort(2), pv3: pvShort(3),
         pv1Full: pvFull(1), pv2Full: pvFull(2), pv3Full: pvFull(3),
-        lnm: isEps ? 'Backup Power(EPS)' : 'Tiêu thụ'
+        lnm: isEps ? 'Backup Power(EPS)' : 'Tiêu thụ',
+        faults: data.Faults ? String(data.Faults) : ''
       });
       try { RTChart.push({ ts: data.ts, pv, load, soc, charge, discharge, gridIn, gridOut }); } catch (e) {}
 
@@ -1919,6 +1956,16 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       $('iv-ongrid').textContent = (data.SetOnGridSoc == null ? '--' : data.SetOnGridSoc) + ' %';
       $('iv-offgrid').textContent = (data.SetOffGridSoc == null ? '--' : data.SetOffGridSoc) + ' %';
       $('iv-pvchg').textContent = data.SetPvChg == null ? '--' : (+data.SetPvChg ? 'Bật' : 'Tắt');
+      $('iv-acchg').textContent = data.SetAcChg == null ? '--' : (+data.SetAcChg ? 'Bật' : 'Tắt');
+      $('iv-feedin').textContent = data.SetFeedIn == null ? '--' : (+data.SetFeedIn ? 'Bật' : 'Tắt');
+      $('iv-chgpw').textContent = (data.SetChgPw == null ? '--' : (data.SetChgPw / 10).toFixed(1)) + ' kW';
+      $('iv-dispw').textContent = (data.SetDisPw == null ? '--' : (data.SetDisPw / 10).toFixed(1)) + ' kW';
+      $('iv-acpw').textContent = (data.SetAcPw == null ? '--' : (data.SetAcPw / 10).toFixed(1)) + ' kW';
+      $('iv-acend').textContent = (data.SetAcEnd == null ? '--' : data.SetAcEnd) + ' %';
+      $('iv-acstart').textContent = (data.SetAcStart == null ? '--' : data.SetAcStart) + ' %';
+      $('iv-acstop').textContent = (data.SetAcStop == null ? '--' : data.SetAcStop) + ' %';
+      $('iv-acst1').textContent = data.SetAcSt1 == null ? '--:--' : hmFromReg(data.SetAcSt1);
+      $('iv-aced1').textContent = data.SetAcEd1 == null ? '--:--' : hmFromReg(data.SetAcEd1);
       $('iv-quick').textContent = data.SetQuick == null ? '--' : (+data.SetQuick > 0 ? 'Đang sạc, còn ' + data.SetQuick + ' phút' : 'Tắt');   // Battery Warning SOC (holding reg 164)
       $('sv-ram').textContent = 'RAM ' + nf(data.HeapKB, 0) + (data.HeapTotalKB ? '/' + data.HeapTotalKB : '') + ' KB';
       $('sv-psram').textContent = 'PSRAM ' + mb(data.PsramKB) + (data.PsramTotalKB ? '/' + mb(data.PsramTotalKB) : '') + ' MB';
