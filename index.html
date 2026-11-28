@@ -910,9 +910,8 @@ body.bg-idle *, body.bg-idle *::before, body.bg-idle *::after,
     <div class="group"><h3 style="--c:var(--grid)">Sạc AC từ lưới</h3>
       <div class="ivf"><div class="ivl"><div class="t">Bật/Tắt Sạc AC</div><div class="d">Hiện tại: <b id="iv-acchg">--</b></div></div><div class="ivc"><div class="sel"><select id="iv-in-acchg" onchange="invDirty.ac=true"><option value="1">Bật</option><option value="0">Tắt</option></select></div></div></div>
       <div class="ivf"><div class="ivl"><div class="t">Công suất sạc AC</div><div class="d">Hiện tại: <b id="iv-acpw">-- kW</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acpw" min="0" max="12" step="0.1" inputmode="decimal" oninput="invDirty.ap=true"></div></div></div>
-      <div class="ivf"><div class="ivl"><div class="t">SOC dừng sạc AC (theo giờ)</div><div class="d">Hiện tại: <b id="iv-acend">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acend" min="0" max="100" inputmode="numeric" oninput="invDirty.ae=true"></div></div></div>
+      <div class="ivf"><div class="ivl"><div class="t">SOC dừng sạc AC</div><div class="d">Hiện tại: <b id="iv-acend">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acend" min="0" max="100" inputmode="numeric" oninput="invDirty.ae=true"></div></div></div>
       <div class="ivf"><div class="ivl"><div class="t">SOC bắt đầu sạc AC</div><div class="d">Hiện tại: <b id="iv-acstart">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acstart" min="0" max="90" inputmode="numeric" oninput="invDirty.as=true"></div></div></div>
-      <div class="ivf"><div class="ivl"><div class="t">SOC dừng sạc AC (theo SOC)</div><div class="d">Hiện tại: <b id="iv-acstop">-- %</b></div></div><div class="ivc"><div class="txt"><input type="number" id="iv-in-acstop" min="0" max="100" inputmode="numeric" oninput="invDirty.at=true"></div></div></div>
       <div class="ivf"><div class="ivl"><div class="t">Khung giờ sạc AC 1 (Bắt đầu)</div><div class="d">Hiện tại: <b id="iv-acst1">--:--</b></div></div><div class="ivc"><div class="txt"><input type="time" id="iv-in-acst1" oninput="invDirty.s1=true"></div></div></div>
       <div class="ivf"><div class="ivl"><div class="t">Khung giờ sạc AC 1 (Kết thúc)</div><div class="d">Hiện tại: <b id="iv-aced1">--:--</b></div></div><div class="ivc"><div class="txt"><input type="time" id="iv-in-aced1" oninput="invDirty.e1=true"></div></div></div>
       <p class="hint" id="iv-hint" style="margin-top:8px"></p>
@@ -1096,7 +1095,7 @@ return {vol:vol,toggle:toggle,wifi:wifi,feed:feed,lost:lost,ok:ok,isOn:function(
     h3.addEventListener('click', () => h3.parentElement.classList.toggle('fold'));
     if (/^Hẹn giờ/.test(h3.textContent)) h3.parentElement.classList.add('fold');
   });
-  const invDirty = { w:false, c:false, g:false, o:false, ac:false, f:false, cp:false, dp:false, ap:false, ae:false, s1:false, e1:false, as:false, at:false };
+  const invDirty = { w:false, c:false, g:false, o:false, ac:false, f:false, cp:false, dp:false, ap:false, ae:false, s1:false, e1:false, as:false };
 const invCur = {};
 let invWait = null;
 const invEl = (id) => document.getElementById(id);
@@ -1110,9 +1109,9 @@ function invSync(d) {
     c: num(d.SetPvChg), g: num(d.SetOnGridSoc), o: num(d.SetOffGridSoc),
     ac: num(d.SetAcChg), f: num(d.SetFeedIn), cp: num(d.SetChgPw), dp: num(d.SetDisPw),
     ap: num(d.SetAcPw), ae: num(d.SetAcEnd), s1: num(d.SetAcSt1), e1: num(d.SetAcEd1),
-    as: num(d.SetAcStart), at: num(d.SetAcStop)
+    as: num(d.SetAcStart)
   });
-  [['w','wsoc'],['c','pvchg'],['g','ongrid'],['o','offgrid'],['ac','acchg'],['f','feedin'],['cp','chgpw'],['dp','dispw'],['ae','acend'],['as','acstart'],['at','acstop']]
+  [['w','wsoc'],['c','pvchg'],['g','ongrid'],['o','offgrid'],['ac','acchg'],['f','feedin'],['cp','chgpw'],['dp','dispw'],['ae','acend'],['as','acstart']]
   .forEach(([ck, id]) => { if (!invDirty[ck] && invCur[ck] != null) invEl('iv-in-' + id).value = invCur[ck]; });
   if (!invDirty.ap && invCur.ap != null) invEl('iv-in-acpw').value = (invCur.ap / 10).toFixed(1);
   if (!invDirty.s1 && invCur.s1 != null) invEl('iv-in-acst1').value = hmFromReg(invCur.s1);
@@ -1155,9 +1154,8 @@ async function invApply() {
   if (!addNum('dp','dispw','iv-in-dispw',0,250,'Giới hạn dòng xả',' A')) return;
   addSel('ac','acchg','iv-in-acchg','Sạc AC từ lưới');
   if (!addKw('ap','acpw','iv-in-acpw','Công suất sạc AC')) return;
-  if (!addNum('ae','acend','iv-in-acend',0,100,'SOC dừng sạc AC (giờ)')) return;
+  if (!addNum('ae','acend','iv-in-acend',0,100,'SOC dừng sạc AC')) return;
   if (!addNum('as','acstart','iv-in-acstart',0,90,'SOC bắt đầu sạc AC')) return;
-  if (!addNum('at','acstop','iv-in-acstop',0,100,'SOC dừng sạc AC (SOC)')) return;
   addTm('s1','acst1','iv-in-acst1','Sạc AC khung 1 bắt đầu');
   addTm('e1','aced1','iv-in-aced1','Sạc AC khung 1 kết thúc');
   if (!jobs.length) { st.textContent = 'Không có thay đổi để ghi'; return; }
@@ -1962,7 +1960,6 @@ const SET_TABS = [2, 3, 6, 4, 8];          // Biến tần, Auto, Âm thanh, Tà
       $('iv-acpw').textContent = (data.SetAcPw == null ? '--' : (data.SetAcPw / 10).toFixed(1)) + ' kW';
       $('iv-acend').textContent = (data.SetAcEnd == null ? '--' : data.SetAcEnd) + ' %';
       $('iv-acstart').textContent = (data.SetAcStart == null ? '--' : data.SetAcStart) + ' %';
-      $('iv-acstop').textContent = (data.SetAcStop == null ? '--' : data.SetAcStop) + ' %';
       $('iv-acst1').textContent = data.SetAcSt1 == null ? '--:--' : hmFromReg(data.SetAcSt1);
       $('iv-aced1').textContent = data.SetAcEd1 == null ? '--:--' : hmFromReg(data.SetAcEd1);
       $('iv-quick').textContent = data.SetQuick == null ? '--' : (+data.SetQuick > 0 ? 'Đang sạc, còn ' + data.SetQuick + ' phút' : 'Tắt');   // Battery Warning SOC (holding reg 164)
